@@ -1,0 +1,85 @@
+name: Build and Push Image
+
+on:
+  workflow_call:
+    inputs:
+      DOCKER_DOCKERFILE:
+        description: "Path to the dockerfile."
+        type: string
+        default: "Dockerfile"
+      DOCKER_DIR:
+        description: "Docker build directory."
+        type: string
+        default: "."
+      DOCKER_IMAGE_NAME:
+        description: "Docker image name."
+        type: string
+        default: "portal"
+      DOCKER_IMAGE_TAG:
+        description: "Tag to apply to image."
+        required: true
+        type: string
+      GCP_PROJECT_ID:
+        description: "ID of the GCP project."
+        required: true
+        type: string
+      GCP_AR_REGION:
+        description: "Artifact Registry region."
+        type: string
+        default: "us"
+      GCP_AR_REPO_NAME:
+        description: "Artifact Registry repository name."
+        required: true
+        type: string
+    secrets:
+      GCP_ACCESS_KEY:
+        required: true
+    outputs:
+      IMAGE_URI:
+        description: "URI of the pushed AR image."
+        value: ${{ jobs.build-push.outputs.IMAGE_URI }}
+
+jobs:
+  build-push:
+    name: Build and Push Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    outputs:
+      IMAGE_URI: ${{ steps.docker-push.outputs.IMAGE_URI }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Gcloud Auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: ${{ inputs.GCP_PROJECT_ID }}
+          credentials_json: ${{ secrets.GCP_ACCESS_KEY }}
+
+      - name: Set AR URI
+        shell: bash
+        run: |
+          REPO_DOMAIN="${{ inputs.GCP_AR_REGION }}-docker.pkg.dev"
+          echo "AR_REPO_DOMAIN=$REPO_DOMAIN" >> $GITHUB_ENV
+          echo "AR_REPO_URI=$REPO_DOMAIN/${{ inputs.GCP_PROJECT_ID }}/${{ inputs.GCP_AR_REPO_NAME }}" >> $GITHUB_ENV
+
+      - name: Setup Docker Auth
+        run: |
+          gcloud auth configure-docker "${AR_REPO_DOMAIN}" --quiet
+
+      - name: Build Image
+        run: |
+          docker build \
+            --tag "${AR_REPO_URI}/${{ inputs.DOCKER_IMAGE_NAME }}:vcs-${{ github.sha }}" \
+            --tag "${AR_REPO_URI}/${{ inputs.DOCKER_IMAGE_NAME }}:${{ inputs.DOCKER_IMAGE_TAG }}" \
+            --file "${{ inputs.DOCKER_DOCKERFILE}}" \
+            "${{ inputs.DOCKER_DIR }}"
+
+      - name: Push Image
+        id: docker-push
+        run: |
+          docker push "${AR_REPO_URI}/${{ inputs.DOCKER_IMAGE_NAME }}:vcs-${{ github.sha }}"
+          docker push "${AR_REPO_URI}/${{ inputs.DOCKER_IMAGE_NAME }}:${{ inputs.DOCKER_IMAGE_TAG }}"
+          echo "IMAGE_URI=${AR_REPO_URI}/${{ inputs.DOCKER_IMAGE_NAME }}:${{ inputs.DOCKER_IMAGE_TAG }}" >> "$GITHUB_OUTPUT"

@@ -1,0 +1,17 @@
+model request_log {
+  id                       Int       @id @default(autoincrement())
+  request_date             DateTime? @db.DateTime(0)
+  direction                String?   @default("outbound") @db.VarChar(25)
+  platform                 String?   @db.VarChar(100)
+  method                   String?   @db.VarChar(25)
+  endpoint                 String?   @db.VarChar(254)
+  headers                  String?   @db.VarChar(1000)
+  body                     String?   @db.Text
+  response_code            String?   @db.VarChar(25)
+  response_headers         String?   @db.VarChar(25)
+  response_body            String?   @db.Text
+  duration                 Float?    @db.Float
+  info                     String?   @db.Text
+  reward_id                String?   @db.VarChar(50)
+  cp_transaction_reference String?   @db.VarChar(100)
+}

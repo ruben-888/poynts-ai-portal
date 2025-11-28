@@ -1,0 +1,1985 @@
+model admin_log {
+  id       Int       @id @default(autoincrement())
+  code     Int?
+  msg      String?   @db.Text
+  memberid Int?
+  entid    Int?
+  date     DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model adoption_milestones {
+  id                   Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  am_firstlogin        Int?      @default(0)
+  am_demog             Int?      @default(0)
+  am_eula              Int?      @default(0)
+  am_users             Int?      @default(0)
+  am_upload            Int?      @default(0)
+  am_ftue              Int?      @default(0)
+  am_train             Int?      @default(0)
+  am_mobilelogin       Int?      @default(0)
+  am_30pt              Int?      @default(0)
+  am_30upload          Int?      @default(0)
+  am_30user            Int?      @default(0)
+  entid                Int?
+  memberid             Int
+  am_inviteSent        Int?      @default(0)
+  am_inviteConfirmHold Int       @default(0)
+  am_zerofriction      Int?      @default(0)
+  create_date          DateTime? @default(now()) @db.Timestamp(0)
+  update_date          DateTime? @default(now()) @db.Timestamp(0)
+
+  @@index([entid], map: "idx_entid_adoption_milestones")
+  @@index([memberid], map: "idx_memberid_adoption_milestones")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model appnotification_queue {
+  id          Int       @id @default(autoincrement())
+  nq_date     DateTime? @default(now()) @db.DateTime(0)
+  nq_message  String?   @db.VarChar(1024)
+  nq_type     String?   @db.VarChar(45)
+  nq_audience String?   @default("ent_staff") @db.VarChar(45)
+  nq_entid    String?   @db.VarChar(45)
+  nq_memberid String?   @db.VarChar(45)
+  nq_status   Int?      @default(0)
+  nq_title    String?   @db.VarChar(255)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model care_plan_regen_queue {
+  id        Int       @id @default(autoincrement())
+  cp_count  Int?      @default(0)
+  status    Int?      @default(0)
+  cp_detail String?   @db.Text
+  modTS     DateTime? @default(now()) @db.Timestamp(0)
+  pt_id     Int?
+  ent_id    Int?
+}
+
+model care_tags {
+  id                 Int     @id @default(autoincrement())
+  target_entity_type String? @db.VarChar(45)
+  tag_type           String? @db.VarChar(45)
+  tag_code           String? @db.VarChar(45)
+  target_entity_id   Int?
+  comment            String? @db.VarChar(255)
+}
+
+model carepath_careplan {
+  id    Int  @id @default(autoincrement())
+  pw_id Int?
+  cp_id Int?
+}
+
+model carepaths {
+  pw_id      Int       @id @default(autoincrement())
+  pw_name    String?   @db.VarChar(255)
+  pw_details String?   @db.VarChar(255)
+  pw_status  Int?      @default(1)
+  pw_modTS   DateTime? @default(now()) @db.Timestamp(0)
+  pw_isproto Int?      @default(1)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model careplan {
+  cp_id        Int       @id @default(autoincrement())
+  cp_action    String?   @db.VarChar(32)
+  cp_title     String?   @db.VarChar(45)
+  cp_desc      String?   @db.VarChar(255)
+  cp_isproto   Int?      @default(0) @db.TinyInt
+  cp_nar       String?   @db.VarChar(255)
+  cp_goal_id   Int?
+  cp_targetDur Int?      @default(0)
+  cp_status    Int?      @default(1)
+  cp_category  String?   @db.VarChar(16)
+  cp_dateMod   DateTime? @db.DateTime(0)
+  cp_patientid Int?
+  cp_data      String?   @db.MediumText
+  cp_entid     Int?      @default(0)
+  cp_protoid   Int?      @default(0)
+}
+
+model casenotes {
+  id       Int       @id @default(autoincrement())
+  note     String?   @db.Text
+  memberid Int?
+  modDate  DateTime? @db.DateTime(0)
+  ownerid  Int?
+}
+
+model catalog_tag_map {
+  id         Int  @id @default(autoincrement())
+  catalog_id Int?
+  tag_id     Int?
+}
+
+model cci {
+  ICD_CODE             String  @id @db.VarChar(16)
+  CATEGORY_DESCRIPTION String? @db.VarChar(45)
+  BODY_SYSTEM          String? @db.VarChar(45)
+}
+
+model ccmember_cpmember {
+  id         Int     @id @default(autoincrement())
+  ccMemberid Int?
+  cpMemberid String? @db.VarChar(45)
+  mtype      String? @default("member") @db.VarChar(45)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model ccsdx9 {
+  ICD_CODE                 String? @db.VarChar(16)
+  CCS_CATEGORY             String? @db.VarChar(16)
+  CCS_CATEGORY_DESCRIPTION String? @db.VarChar(45)
+
+  @@ignore
+}
+
+model compliance {
+  id       Int       @id @default(autoincrement())
+  date     DateTime? @db.DateTime(0)
+  score    Int?
+  memberid Int?
+  type     String?   @default("task") @db.VarChar(45)
+}
+
+model conv_member {
+  id                   Int       @id @default(autoincrement())
+  conv_id              String    @db.Char(36)
+  conv_memberid        Int
+  conv_read            Int?      @default(0)
+  conv_activeTimestamp DateTime? @default(now()) @db.Timestamp(0)
+  conv_status          Int?      @default(1)
+}
+
+model conversations {
+  id             Int       @id @default(autoincrement())
+  conv_id        String    @db.Char(36)
+  msg_memberid   Int?
+  conv_msg       String    @db.Text
+  conv_attach    String?   @db.Text
+  conv_timestamp DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model cp_affiliate_transactionlog {
+  id          Int       @id @default(autoincrement())
+  promo_id    Int?
+  entity_type String?   @default("promo") @db.VarChar(45)
+  date        DateTime? @default(now()) @db.DateTime(0)
+  txid        String?   @db.VarChar(45)
+  memberid    Int?
+  metadata    String?   @db.Text
+  entid       Int?
+  status      String?   @default("pending") @db.VarChar(45)
+}
+
+model cp_amazon_earnings_report {
+  id                Int       @id @default(autoincrement())
+  category          String?   @db.VarChar(45)
+  item_name         String?   @map("item-name") @db.VarChar(256)
+  ASIN              String?   @db.VarChar(45)
+  seller            String?   @db.VarChar(45)
+  tracking_id       String?   @map("tracking-id") @db.VarChar(45)
+  date_shipped      DateTime? @map("date-shipped") @db.Timestamp(0)
+  price             Float?    @db.Float
+  items_shipped     String?   @map("items-shipped") @db.VarChar(45)
+  returns           String?   @db.VarChar(45)
+  revenue           Float?    @db.Float
+  ad_fees           Float?    @map("ad-fees") @db.Float
+  device_type_group String?   @map("device-type-group") @db.VarChar(45)
+  import_date       DateTime? @default(now()) @db.DateTime(0)
+}
+
+model cp_answer {
+  ID             Int       @id @default(autoincrement())
+  answer_key     String?   @db.VarChar(10)
+  answer_text    String    @db.VarChar(2000)
+  answer_value   Int?
+  answer_type_id Int?
+  is_calculable  Int?      @db.TinyInt
+  isactive       Int?      @db.TinyInt
+  create_date    DateTime? @db.DateTime(0)
+  update_date    DateTime? @db.DateTime(0)
+}
+
+model cp_app_config {
+  id          Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  name        String    @db.VarChar(45)
+  value       String?   @db.LongText
+  type        String?   @db.VarChar(45)
+  create_date DateTime? @default(now()) @db.DateTime(0)
+  update_date DateTime? @default(now()) @db.DateTime(0)
+  is_active   Int?      @default(1)
+  is_deleted  Int?      @default(0)
+}
+
+model cp_carecard_response {
+  id                  Int      @id @default(autoincrement()) @db.UnsignedInt
+  member_id           Int?
+  reward_id           Int?
+  total               Decimal? @db.Decimal(4, 2)
+  account_balance     Int?
+  invoice_id          Int?
+  merchant_id         Int?
+  recipient_gift_link String?  @db.VarChar(255)
+  voucher_id          Int?
+  metadata            String?  @db.Text
+  create_date         DateTime @default(now()) @db.Timestamp(0)
+  update_date         DateTime @default(now()) @db.Timestamp(0)
+}
+
+model cp_client_bank {
+  id                     Int        @id @default(autoincrement())
+  client_id              Int
+  name                   String?    @db.VarChar(50)
+  created_at             DateTime   @default(now()) @db.DateTime(0)
+  updated_at             DateTime?  @default(now()) @db.DateTime(0)
+  respective_provider_id Int?
+  provider               providers? @relation("ClientBankToProvider", fields: [respective_provider_id], references: [id])
+
+  // Relations
+  ledgers poynts_bank_ledger[]
+}
+
+model cp_client_member_mapping {
+  id          Int       @id @default(autoincrement())
+  client_id   Int
+  member_id   Int
+  member_key  String    @db.VarChar(45)
+  create_date DateTime? @default(now()) @db.DateTime(0)
+  update_date DateTime? @default(now()) @db.DateTime(0)
+  deleted_at  DateTime? @db.DateTime(0)
+}
+
+model cp_clients {
+  id                    Int       @id @default(autoincrement())
+  name                  String    @db.VarChar(50)
+  client_id             String    @unique(map: "client_id_UNIQUE") @db.VarChar(32)
+  secret_key            String    @db.VarChar(64)
+  secret_key_backup     String?   @db.VarChar(100)
+  ent_id                Int
+  auth_provider_org_id  String?   @db.VarChar(50)
+  create_date           DateTime? @default(now()) @db.DateTime(0)
+  update_date           DateTime? @default(now()) @db.DateTime(0)
+}
+
+model cp_clique {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  created_by  Int?
+  type        String?   @db.VarChar(45)
+  create_date DateTime? @db.DateTime(0)
+  update_date DateTime? @db.DateTime(0)
+  status      String?   @default("active") @db.VarChar(45)
+}
+
+model cp_clique_member {
+  id          Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  member_id   Int
+  clique_id   Int
+  type        String    @db.VarChar(45)
+  create_date DateTime? @db.DateTime(0)
+  update_date DateTime? @db.DateTime(0)
+  status      String?   @default("active") @db.VarChar(45)
+}
+
+model cp_enterprise_tags {
+  id          Int      @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  ent_id      Int
+  tag_name    String?  @db.VarChar(45)
+  is_deleted  Int      @default(0)
+  is_active   Int      @default(1)
+  create_date DateTime @default(now()) @db.Timestamp(0)
+  update_date DateTime @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model cp_entityindex {
+  id          Int     @id @default(autoincrement())
+  keyword     String? @db.VarChar(255)
+  entity_id   Int?
+  entity_type String? @default("member") @db.VarChar(45)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model cp_ext_payments {
+  id          Int     @id @default(autoincrement())
+  source_type String? @db.VarChar(45)
+  source_txid String? @db.VarChar(45)
+  re_txid     String? @db.VarChar(45)
+}
+
+model cp_failure_invite {
+  id           Int       @id @default(autoincrement())
+  email        String?   @db.VarChar(256)
+  sender_id    Int?
+  receiver_id  Int?
+  updated_date DateTime? @default(now()) @db.DateTime(0)
+}
+
+model cp_fcm_registration_token {
+  id               Int       @id @default(autoincrement())
+  member_id        Int
+  uuid             String    @unique(map: "uuid_UNIQUE") @db.VarChar(100)
+  fcm_registration String    @db.VarChar(200)
+  create_date      DateTime? @default(now()) @db.Timestamp(0)
+  update_date      DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model cp_fund_transactions {
+  id             Int      @id @default(autoincrement())
+  transaction_id String   @db.VarChar(100)
+  type           String   @db.VarChar(30)
+  amount         Float    @db.Float
+  currency       String   @db.VarChar(10)
+  account_number String   @db.VarChar(50)
+  status         String   @db.VarChar(50)
+  date           DateTime @db.DateTime(0)
+  cust_id        String?  @db.VarChar(50)
+  account_id     String?  @db.VarChar(50)
+  cust_name      String?  @db.VarChar(80)
+  account_name   String?  @db.VarChar(80)
+}
+
+model cp_giftcard {
+  id               Int      @id @default(autoincrement()) @db.UnsignedInt
+  gift_identifier  String?  @db.VarChar(145)
+  reward_id        Int?
+  ent_id           Int      @default(1)
+  name             String   @db.VarChar(255)
+  description      String?  @db.VarChar(1000)
+  brand            String   @db.VarChar(45)
+  type             Int      @default(0)
+  image_urls_80w   String?  @db.VarChar(5000)
+  image_urls_130w  String?  @db.VarChar(5000)
+  image_urls_200w  String?  @db.VarChar(1000)
+  image_urls_278w  String?  @db.VarChar(1000)
+  image_urls_300w  String?  @db.VarChar(1000)
+  image_urls_1200w String?  @db.VarChar(1000)
+  created_by       Int
+  create_date      DateTime @default(now()) @db.Timestamp(0)
+  update_date      DateTime @default(now()) @db.Timestamp(0)
+  status           String?  @default("active") @db.VarChar(45)
+  expiration_days  Int?
+  merchant         String?  @db.VarChar(45)
+  sender           String?  @db.VarChar(45)
+  price            Decimal? @db.Decimal(4, 2)
+  carepoynt_value  Int      @default(0)
+  conversion_rate  Int      @default(0)
+  redemption_id    Int      @default(0)
+}
+
+model cp_giftcard_settlement_log {
+  id                   Int       @id @default(autoincrement())
+  transactionlog_id    Int?
+  memberid             Int
+  create_date          DateTime? @default(now()) @db.DateTime(0)
+  update_date          DateTime? @default(now()) @db.DateTime(0)
+  giftcard_response_id Int?
+  is_settled           Int?      @db.TinyInt
+  is_poynt_transfer    Int?      @default(0) @db.TinyInt
+  is_sms_sent          Int?      @default(0) @db.TinyInt
+  is_gift_created      Int?      @default(0) @db.TinyInt
+  metadata             String?   @db.Text
+}
+
+model cp_hapi_activities_log {
+  id             Int       @id @default(autoincrement())
+  memberid       Int?
+  h_logId        String?   @db.VarChar(100)
+  h_userId       String?   @db.VarChar(100)
+  humanId        String?   @db.VarChar(100)
+  source         String?   @db.VarChar(45)
+  h_date         DateTime? @db.DateTime(0)
+  duration       String?   @db.VarChar(45)
+  distance       String?   @db.VarChar(45)
+  steps          String?   @db.VarChar(45)
+  calories       String?   @db.VarChar(45)
+  vigorous       String?   @db.VarChar(45)
+  moderate       String?   @db.VarChar(45)
+  light          String?   @db.VarChar(45)
+  sedentary      String?   @db.VarChar(45)
+  timeAsleep     String?   @db.VarChar(45)
+  timeAwake      String?   @db.VarChar(45)
+  sourceData     String?   @db.Text
+  hApi_createdAt String?   @db.VarChar(45)
+  hApi_updatedAt String?   @db.VarChar(45)
+  create_date    DateTime? @default(now()) @db.DateTime(0)
+  update_date    DateTime? @default(now()) @db.DateTime(0)
+}
+
+model cp_healthkit_activities_log {
+  id          Int       @id @default(autoincrement())
+  member_id   Int?
+  value       Int?
+  unit        String?   @db.VarChar(45)
+  type        String?   @db.VarChar(45)
+  start_date  DateTime? @db.Timestamp(0)
+  end_date    DateTime? @db.Timestamp(0)
+  is_active   Int?      @default(1) @db.TinyInt
+  is_deleted  Int?      @default(0) @db.TinyInt
+  create_date DateTime? @default(now()) @db.Timestamp(0)
+  update_date DateTime? @default(now()) @db.Timestamp(0)
+
+  @@unique([member_id, unit, type, start_date, end_date], map: "cp_healthkit_activities_log_index")
+}
+
+model cp_login_log {
+  id          Int      @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  username    String   @db.VarChar(45)
+  device      String   @db.VarChar(45)
+  os          String   @db.VarChar(45)
+  browser     String   @db.VarChar(45)
+  ip          String   @db.VarChar(45)
+  success     Int
+  ent_id      String?  @db.VarChar(45)
+  application String?  @db.VarChar(45)
+  is_active   Int      @default(1)
+  is_deleted  Int      @default(0)
+  create_date DateTime @default(now()) @db.DateTime(0)
+  update_date DateTime @default(now()) @db.DateTime(0)
+  user_agent  String?  @db.VarChar(200)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model cp_lookup {
+  id         Int     @id @default(autoincrement())
+  key        Int     @db.TinyInt
+  title      String? @db.VarChar(45)
+  type_id    Int?    @db.SmallInt
+  is_deleted Boolean @default(false)
+}
+
+model cp_lookup_type {
+  id         Int     @id @default(autoincrement()) @db.SmallInt
+  type       String? @db.VarChar(45)
+  is_deleted Int?    @default(0) @db.TinyInt
+}
+
+model cp_map_tag_enterprise {
+  id       Int     @id @default(autoincrement())
+  ent_id   String? @db.VarChar(45)
+  tag_name String? @db.VarChar(45)
+}
+
+model cp_media {
+  id             Int       @id @default(autoincrement()) @db.UnsignedInt
+  media_filename String?   @db.Text
+  media_type     String?   @db.VarChar(45)
+  is_public      Int?      @default(0) @db.TinyInt
+  created_by     Int?
+  create_date    DateTime? @default(now()) @db.Timestamp(0)
+  update_date    DateTime? @default(now()) @db.Timestamp(0)
+  status         Int?      @default(1) @db.TinyInt
+  caption        String?   @db.VarChar(256)
+  category       String?   @db.VarChar(45)
+  category_id    Int?      @default(0)
+  ent_id         Int?      @default(1)
+}
+
+model cp_member_answer {
+  ID            Int       @id @default(autoincrement())
+  member_id     Int
+  promo_id      Int
+  questionID    Int
+  answerID      Int?
+  task_id       Int?
+  response_date DateTime? @db.DateTime(0)
+  create_date   DateTime? @default(now()) @db.DateTime(0)
+  update_date   DateTime? @db.DateTime(0)
+  isactive      Int       @default(1)
+}
+
+model cp_member_device {
+  id           Int       @id @default(autoincrement())
+  username     String?   @db.VarChar(45)
+  success      Int?      @db.TinyInt
+  isVirtual    Int?      @db.TinyInt
+  manufacturer String?   @db.VarChar(100)
+  model        String?   @db.VarChar(100)
+  platform     String?   @db.VarChar(100)
+  serial       String?   @db.VarChar(100)
+  uuid         String?   @db.VarChar(100)
+  version      String?   @db.VarChar(100)
+  loginId      Int?
+  create_date  DateTime? @default(now()) @db.Timestamp(0)
+  update_date  DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model cp_member_flag {
+  id          Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  member_id   Int
+  resolved    Int?      @default(0)
+  reason      String?   @db.Text
+  is_active   Int?      @default(1)
+  is_deleted  Int?      @default(0)
+  create_date DateTime? @default(now()) @db.DateTime(0)
+  update_date DateTime? @default(now()) @db.DateTime(0)
+}
+
+model cp_member_tags {
+  id              Int       @id @unique(map: "idnew_table_UNIQUE") @default(autoincrement())
+  member_id       Int
+  tag_name        String?   @db.VarChar(45)
+  is_deleted      Int       @default(0)
+  is_active       Int       @default(1)
+  create_date     DateTime  @default(now()) @db.Timestamp(0)
+  update_date     DateTime  @default(now()) @db.Timestamp(0)
+  type            String    @db.VarChar(45)
+  effective_date  DateTime? @db.Timestamp(0)
+  expiration_date DateTime? @db.Timestamp(0)
+}
+
+model cp_member_task {
+  id            Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  member_id     String    @db.VarChar(45)
+  task_id       String    @db.VarChar(45)
+  task_type     String    @db.VarChar(45)
+  is_active     String    @default("1") @db.VarChar(45)
+  is_deleted    String    @default("0") @db.VarChar(45)
+  complete_date DateTime? @db.DateTime(0)
+  create_date   DateTime  @default(now()) @db.DateTime(0)
+  update_date   DateTime  @default(now()) @db.DateTime(0)
+  task_image    String?   @db.Text
+  is_approved   Int?
+  approval_date DateTime? @db.DateTime(0)
+  approval_by   Int?
+  comments      String?   @db.VarChar(255)
+}
+
+model cp_offer_code {
+  id          Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  offer_code  String?   @db.VarChar(45)
+  offer_id    Int?
+  type        String?   @default("promo") @db.VarChar(45)
+  is_one_time Int?      @default(0)
+  description String?   @db.VarChar(200)
+  is_active   Int?      @default(1)
+  is_deleted  Int?      @default(0)
+  create_date DateTime? @default(now()) @db.Timestamp(0)
+  update_date DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model cp_offer_code_log {
+  id            Int       @id @default(autoincrement()) @db.UnsignedInt
+  offer_code_id Int?
+  memberid      Int?
+  email         String?   @db.VarChar(45)
+  offer_id      Int?
+  offer_code    String?   @db.VarChar(45)
+  offer_type    String?   @db.VarChar(45)
+  success       Int?
+  create_date   DateTime? @default(now()) @db.DateTime(0)
+}
+
+model cp_partner_voucher {
+  id             Int       @id @default(autoincrement())
+  voucher_code   String?   @db.VarChar(45)
+  voucher_amount Float?    @default(0) @db.Float
+  create_date    DateTime? @default(now()) @db.Timestamp(0)
+  update_date    DateTime? @default(now()) @db.Timestamp(0)
+  exp_date       DateTime? @db.Timestamp(0)
+  entid          Int?      @default(1)
+  status         Boolean?  @default(false)
+}
+
+model cp_plan {
+  id            Int      @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  careplan_name String   @db.VarChar(45)
+  tag_name      String?  @db.VarChar(45)
+  is_deleted    Int      @default(0)
+  is_active     Int      @default(1)
+  create_date   DateTime @default(now()) @db.Timestamp(0)
+  update_date   DateTime @default(now()) @db.Timestamp(0)
+}
+
+model cp_poynts {
+  Id               Int       @id @default(autoincrement())
+  fieloId          String?   @db.VarChar(45)
+  fielomemberId    String?   @db.VarChar(45)
+  fname            String?   @db.VarChar(45)
+  lname            String?   @db.VarChar(45)
+  email            String?   @db.VarChar(45)
+  points           String?   @db.VarChar(45)
+  entid            String?   @db.VarChar(45)
+  enterprisename   String?   @db.VarChar(45)
+  memberid         String?   @db.VarChar(45)
+  membername       String?   @db.VarChar(45)
+  status           String?   @db.VarChar(45)
+  type             String?   @db.VarChar(45)
+  CreatedDate      DateTime? @db.DateTime(0)
+  LastModifiedDate DateTime? @db.DateTime(0)
+}
+
+model cp_promo_group {
+  id             Int    @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  promo_id       Int
+  sub_promo_name String @db.VarChar(45)
+  sub_promo_id   Int
+  is_active      Int
+}
+
+model cp_promo_question {
+  ID          Int       @id @default(autoincrement())
+  promo_id    Int?
+  task_id     Int?
+  questionID  Int?
+  isactive    Int?      @default(1) @db.TinyInt
+  sequence    Int?
+  start_date  DateTime? @db.DateTime(0)
+  end_date    DateTime? @db.DateTime(0)
+  frequency   Int?
+  create_date DateTime? @default(now()) @db.DateTime(0)
+  update_date DateTime? @default(now()) @db.DateTime(0)
+  is_deleted  String?   @default("0") @db.VarChar(45)
+}
+
+model cp_promo_segments {
+  id         Int     @id @default(autoincrement())
+  segment_id String? @db.VarChar(45)
+  promo_id   Int?
+}
+
+model cp_promoactvity {
+  id    Int     @id @default(autoincrement())
+  code  String? @db.VarChar(45)
+  title String? @db.VarChar(45)
+}
+
+model cp_promobase {
+  id           Int     @id @default(autoincrement())
+  title        String? @db.VarChar(45)
+  description  String? @db.VarChar(255)
+  promo_type   String? @db.VarChar(25)
+  reward_value Int?
+  pgroup       String? @default("member") @db.VarChar(45)
+  system_event Int?    @default(0)
+  promo_freq   Int?    @default(0)
+  priority     Int?    @default(0)
+  activity     String? @default("none") @db.VarChar(45)
+}
+
+model cp_promos {
+  id             Int       @id @default(autoincrement())
+  title          String?   @db.VarChar(80)
+  description    String?   @db.VarChar(2000)
+  startdate      DateTime? @db.DateTime(0)
+  enddate        DateTime? @db.DateTime(0)
+  entid          Int?
+  promo_type     String?   @db.VarChar(45)
+  renewal_rule   String    @db.VarChar(45)
+  reward_value   Int?
+  fielo_promo_id String?   @db.VarChar(80)
+  status         Int?      @default(1)
+  promoBase_id   Int?
+  pgroup         String?   @default("member") @db.VarChar(45)
+  promo_freq     Int?      @default(0)
+  activity       String?   @default("none") @db.VarChar(45)
+  priority       Int?      @default(0)
+  is_deleted     Int       @default(0)
+  is_sponsored   String?   @default("0") @db.VarChar(45)
+  is_active      Int       @default(1)
+  create_date    DateTime  @default(now()) @db.Timestamp(0)
+  update_date    DateTime  @default(now()) @db.Timestamp(0)
+  promo_code     String?   @db.VarChar(45)
+}
+
+model cp_promos_variable {
+  id          Int       @id @default(autoincrement())
+  promo_id    Int
+  minimum     Int
+  percentage  Float     @db.Float
+  is_active   Int?      @default(1)
+  is_deleted  Int?      @default(0)
+  create_date DateTime? @default(now()) @db.Timestamp(0)
+  update_date DateTime? @default(now()) @db.Timestamp(0)
+  cp_code     String    @db.VarChar(45)
+}
+
+model cp_question {
+  ID            Int       @id @default(autoincrement())
+  question_key  String?   @db.VarChar(15)
+  question_text String    @db.VarChar(2000)
+  type          String?   @db.VarChar(45)
+  create_date   DateTime? @default(now()) @db.DateTime(0)
+  update_date   DateTime? @default(now()) @db.DateTime(0)
+  IsActive      String?   @default("1") @db.VarChar(45)
+  is_deleted    String?   @default("0") @db.VarChar(45)
+}
+
+model cp_question_answer_mapping {
+  ID          Int       @id @default(autoincrement())
+  questionID  Int?
+  answerID    Int?
+  isactive    Int?      @default(1) @db.TinyInt
+  create_date DateTime? @default(now()) @db.DateTime(0)
+  update_date DateTime? @default(now()) @db.DateTime(0)
+  is_deleted  String?   @default("0") @db.VarChar(45)
+}
+
+model cp_rankings {
+  rankId       Int      @id @default(autoincrement())
+  priorityId   Int
+  rank         Int
+  priorityType String   @db.VarChar(45)
+  isActive     String   @db.VarChar(45)
+  createDate   DateTime @default(now()) @db.Timestamp(0)
+  lastUpdate   DateTime @default(now()) @db.Timestamp(0)
+}
+
+model cp_rate_review {
+  id          Int       @id @default(autoincrement())
+  memberid    Int
+  entid       Int
+  create_date DateTime  @default(now()) @db.Timestamp(0)
+  rating      Int?
+  comment     String?   @db.LongText
+  update_date DateTime? @db.Timestamp(0)
+  updated_by  Int?
+}
+
+model cp_redemption_tags {
+  id   Int     @id @default(autoincrement()) @db.UnsignedInt
+  name String? @db.VarChar(50)
+}
+
+model cp_redemption_tags_map {
+  id                Int     @id @default(autoincrement())
+  redemption_tag_id Int?
+  redemption_id     Int?
+  type              String? @db.VarChar(50)
+}
+
+model cp_redemptionbase {
+  id           Int     @id @default(autoincrement())
+  title        String? @db.VarChar(45)
+  description  String? @db.VarChar(255)
+  redem_type   String? @db.VarChar(25)
+  redem_value  Int?
+  pgroup       String? @default("member") @db.VarChar(45)
+  system_event Int?    @default(0)
+}
+
+model cp_redemptions {
+  id                     Int       @id @default(autoincrement())
+  cpid                   String?   @default("-") @db.VarChar(100)
+  brandName              String?   @db.VarChar(100)
+  custom_id              String?   @db.VarChar(100)
+  title                  String?   @db.VarChar(80)
+  description            String?   @db.Text
+  language               String?   @db.VarChar(20)
+  startdate              DateTime? @db.DateTime(0)
+  enddate                DateTime? @db.DateTime(0)
+  entid                  Int?
+  redem_type             String?   @db.VarChar(25)
+  renewal_rule           String    @db.VarChar(45)
+  redem_value            Float?
+  fielo_promo_id         String?   @db.VarChar(80)
+  status                 Int?      @default(1)
+  reward_status          String?   @default("active") @db.VarChar(50)
+  reward_availability    String?   @default("unknown") @db.VarChar(50)
+  redemBase_id           Int?
+  coupon_expiredate      DateTime? @db.DateTime(0)
+  is_coupon              Int?      @default(0)
+  coupon_code            String?   @db.VarChar(45)
+  coupon_url             String?   @db.VarChar(255)
+  coupon_bitmap          Bytes?    @db.Blob
+  frequency              Int?      @default(0)
+  pos_code               String?   @db.VarChar(35)
+  voucher_type_id        Int?
+  is_deleted             Int       @default(0)
+  is_active              Int       @default(1)
+  create_date            DateTime  @default(now()) @db.Timestamp(0)
+  update_date            DateTime  @default(now()) @db.Timestamp(0)
+  redem_code             String?   @db.VarChar(45)
+  redem_code_type        String?   @db.VarChar(50)
+  redem_url              String?   @db.VarChar(255)
+  partner_voucher_amount Float?    @default(0) @db.Float
+  inventory_type         String?   @default("unlimited") @db.VarChar(50)
+  inventory_remaining    Float?
+  shortDescription       String?   @db.TinyText
+  disclaimer             String?   @db.TinyText
+  instructions           String?   @db.TinyText
+  terms                  String?   @db.TinyText
+  imageUrl               String?   @db.VarChar(1000)
+  value                  String?   @db.VarChar(20)
+  rebate_value           Float?
+  tags                   String?   @db.VarChar(255)
+  created_at             DateTime?
+  updated_at             DateTime?
+}
+
+model cp_redemptions_codes {
+  id                Int       @id @default(autoincrement())
+  cp_redemptions_id Int?
+  code              String    @db.VarChar(50)
+  date_used         DateTime? @db.DateTime(0)
+  date_added        DateTime? @db.DateTime(0)
+
+  @@unique([cp_redemptions_id, code], map: "unique_index")
+}
+
+model cp_referral {
+  id                Int       @id @default(autoincrement())
+  member_id_referer Int?
+  member_id         Int?
+  ent_id            Int?
+  status            String?   @db.VarChar(45)
+  promos            String?   @db.VarChar(1024)
+  isActive          Int?
+  isDeleted         Int?
+  create_time       DateTime? @default(now()) @db.Timestamp(0)
+  update_time       DateTime? @default(now()) @db.Timestamp(0)
+  referralsource    Int?      @default(1)
+  invite_count      Int?      @default(0)
+}
+
+model cp_referral_codes {
+  id            Int       @id @default(autoincrement())
+  memberid      Int
+  referral_code String?   @db.VarChar(45)
+  create_date   DateTime? @db.DateTime(0)
+  update_date   DateTime? @db.DateTime(0)
+  create_by     String?   @db.VarChar(45)
+  update_by     String?   @db.VarChar(45)
+}
+
+model cp_referral_reminder {
+  id             Int       @id @default(autoincrement())
+  reminder_date  DateTime? @db.DateTime(0)
+  cp_referral_id Int?
+}
+
+model cp_segments {
+  id               Int     @id @default(autoincrement())
+  title            String? @db.VarChar(25)
+  fielo_segment_id String? @db.VarChar(80)
+}
+
+model cp_social_media_tokens {
+  id              Int      @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  member_id       Int
+  vendor          String   @db.VarChar(45)
+  token           String   @db.VarChar(255)
+  token_secret    String?  @db.VarChar(255)
+  status          Int
+  create_date     DateTime @default(now()) @db.DateTime(0)
+  update_date     DateTime @default(now()) @db.DateTime(0)
+  facebook_detail String?  @db.Text
+}
+
+model cp_sponsor {
+  id          Int       @id @default(autoincrement())
+  title       String    @default("") @db.VarChar(45)
+  message     String    @default("") @db.VarChar(128)
+  link        String    @db.Text
+  is_active   Int?      @default(1) @db.TinyInt
+  is_deleted  Int?      @default(0) @db.TinyInt
+  create_date DateTime? @default(now()) @db.DateTime(0)
+  update_date DateTime? @default(now()) @db.DateTime(0)
+}
+
+model cp_sponsor_member {
+  id               Int       @id @default(autoincrement())
+  member_id        String    @db.VarChar(45)
+  sponsor_offer_id String    @db.VarChar(45)
+  action           String    @db.VarChar(45)
+  is_active        Int?      @default(1)
+  is_deleted       Int?      @default(0)
+  create_date      DateTime? @default(now()) @db.DateTime(0)
+  update_date      DateTime? @default(now()) @db.DateTime(0)
+}
+
+model cp_sponsor_offer {
+  id          Int       @id @default(autoincrement())
+  sponsor_id  Int
+  offer_id    Int
+  offer_type  String    @db.VarChar(45)
+  weight      Int?      @default(1)
+  code        String    @default("") @db.VarChar(10)
+  is_active   Int?      @default(1) @db.TinyInt
+  is_deleted  Int?      @default(0) @db.TinyInt
+  create_date DateTime? @default(now()) @db.DateTime(0)
+  update_date DateTime? @default(now()) @db.DateTime(0)
+}
+
+model cp_st_joes_member {
+  id             Int       @id @default(autoincrement())
+  memberid       Int?
+  order_type     String?   @db.VarChar(45)
+  create_date    DateTime? @default(now()) @db.DateTime(0)
+  reward_date    DateTime? @db.DateTime(0)
+  fname          String?   @db.VarChar(45)
+  lname          String?   @db.VarChar(45)
+  addr1          String?   @db.VarChar(45)
+  addr2          String?   @db.VarChar(45)
+  city           String?   @db.VarChar(45)
+  state          String?   @db.VarChar(45)
+  zip            String?   @db.VarChar(45)
+  provider_name  String?   @db.VarChar(45)
+  provider_phone String?   @db.VarChar(45)
+  provider_addr  String?   @db.VarChar(45)
+  initials       String?   @db.VarChar(45)
+  test_done      String?   @db.VarChar(45)
+}
+
+model cp_tags {
+  id              Int       @id @default(autoincrement())
+  name            String?   @db.VarChar(100)
+  tag_name        String?   @unique(map: "tag_name_UNIQUE") @db.VarChar(100)
+  effective_date  DateTime? @db.DateTime(0)
+  expiration_date DateTime? @db.DateTime(0)
+  is_active       Int?      @default(1) @db.TinyInt
+  is_deleted      Int?      @default(0) @db.TinyInt
+  type            String    @db.VarChar(45)
+  cssClass        String?   @default("fa fa-2x fa-question") @db.VarChar(45)
+  create_date     DateTime? @default(now()) @db.DateTime(0)
+  update_date     DateTime? @default(now()) @db.DateTime(0)
+  sort_order      Int?      @default(0) @db.SmallInt
+}
+
+model cp_task {
+  id               Int      @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  name             String?  @db.VarChar(45)
+  type             String?  @db.VarChar(45)
+  description      String?  @db.VarChar(45)
+  action           String?  @db.VarChar(256)
+  is_deleted       Int      @default(0)
+  is_active        Int      @default(1)
+  default_approval Int?     @default(1)
+  create_date      DateTime @default(now()) @db.Timestamp(0)
+  update_date      DateTime @default(now()) @db.Timestamp(0)
+}
+
+model cp_task_configuration {
+  id              Int     @id @default(autoincrement())
+  promo_id        Int?
+  milestone_value Int?
+  promo_type      String? @db.VarChar(255)
+}
+
+model cp_task_promo {
+  id          Int      @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  task_id     Int
+  promo_id    Int
+  is_deleted  Int      @default(0)
+  is_active   Int      @default(1)
+  create_date DateTime @default(now()) @db.Timestamp(0)
+  update_date DateTime @default(now()) @db.Timestamp(0)
+}
+
+model cp_transactionlog_failure {
+  id              Int       @id @default(autoincrement())
+  promo_id        Int?
+  fielo_transName String?   @db.VarChar(45)
+  entity_type     String?   @default("promo") @db.VarChar(45)
+  date            DateTime? @default(now()) @db.DateTime(0)
+  entid           Int?
+  memberid        Int?
+  metadata        String?   @db.MediumText
+  poynts          Int       @default(0)
+  ip              String    @default("::1") @db.VarChar(45)
+  device_info     String?   @db.VarChar(256)
+}
+
+model cp_validation {
+  id            Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  member_id     Int
+  validated     Int?      @default(0)
+  code          Int
+  is_active     Int?      @default(1)
+  is_deleted    Int?      @default(0)
+  create_date   DateTime? @default(now()) @db.DateTime(0)
+  update_date   DateTime? @default(now()) @db.DateTime(0)
+  validate_date DateTime? @db.DateTime(0)
+  phone         String?   @db.VarChar(11)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model cp_voucher {
+  id            Int       @id @default(autoincrement())
+  tlog_id       Int?
+  ent_id        Int?
+  memberid      Int?
+  redemption_id String?   @db.VarChar(45)
+  pos_code      String?   @db.VarChar(35)
+  title         String?   @db.VarChar(45)
+  description   String?   @db.Text
+  status_id     Int?
+  start_date    DateTime? @db.DateTime(0)
+  end_date      DateTime? @db.DateTime(0)
+  redeem_date   DateTime? @db.DateTime(0)
+  create_date   DateTime? @db.DateTime(0)
+  update_date   DateTime? @db.DateTime(0)
+  poynts        Int?
+  voucher_code  String?   @db.VarChar(25)
+}
+
+model cqm_ccs {
+  id     Int     @id @default(autoincrement())
+  ccs    String? @db.VarChar(45)
+  cms_id String? @db.VarChar(45)
+  notes  String? @db.VarChar(45)
+}
+
+model cqm_def {
+  id             Int     @id @default(autoincrement())
+  title          String? @db.VarChar(256)
+  cms_emeasureid String? @db.VarChar(256)
+  nqf_id         String? @db.VarChar(256)
+  cms_id         String? @db.VarChar(256)
+  drl            String? @db.Text
+  xml            String? @db.Text
+}
+
+model cqm_queue {
+  id         Int       @id @default(autoincrement())
+  memberid   Int?
+  status     Int?      @default(0)
+  timestamp  DateTime? @default(now()) @db.Timestamp(0)
+  remote_id  String?   @db.VarChar(45)
+  cqm_data   String?   @db.Text
+  cqm_open   Int?      @default(0)
+  cqm_closed Int?      @default(0)
+  cda_id     Int?
+  startDate  DateTime? @db.Date
+  endDate    DateTime? @db.Date
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model device_patient {
+  dv_ptid          Int       @id @default(autoincrement())
+  memberid         Int
+  deviceid         Int
+  device_gateway   String?   @db.VarChar(45)
+  hapi_publicToken String?   @db.VarChar(255)
+  hapi_params      String?   @db.VarChar(1024)
+  hapi_humanId     String?   @db.VarChar(45)
+  hapi_accessToken String?   @db.VarChar(1024)
+  create_date      DateTime? @default(now()) @db.DateTime(0)
+  update_date      DateTime? @default(now()) @db.DateTime(0)
+}
+
+model diet_log {
+  id        Int       @id @default(autoincrement())
+  date      DateTime? @default(now()) @db.Timestamp(0)
+  meal      String?   @default("") @db.VarChar(45)
+  cal       Int?      @default(0)
+  nut_score Int?      @default(0)
+  fat       Int?      @default(0)
+  protein   Int?      @default(0)
+  carbs     Int?      @default(0)
+  sodium    String?   @default("0") @db.VarChar(45)
+  title     String?   @db.VarChar(255)
+  memberid  Int?
+}
+
+model edu_index {
+  id      Int     @id @default(autoincrement())
+  extid   String  @db.VarChar(45)
+  keyword String? @db.VarChar(45)
+  comment String? @db.VarChar(45)
+
+  @@index([keyword], map: "index1")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model edu_viewmedia {
+  specialty String? @db.VarChar(12)
+  anatomy   String? @db.VarChar(5)
+  cat       String? @db.VarChar(12)
+  title     String? @db.VarChar(99)
+  keyword   String? @db.VarChar(29)
+  extid     String? @db.VarChar(12)
+  dur       String? @db.VarChar(7)
+  detail    String? @db.VarChar(406)
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model education {
+  ed_id       Int      @id @default(autoincrement())
+  ed_entid    Int?
+  ed_memberid Int?
+  ed_modDate  DateTime @default(dbgenerated("'0000-00-00 00:00:00'")) @db.Timestamp(0)
+  ed_type     String   @default("doc") @db.VarChar(10)
+  ed_title    String   @db.VarChar(45)
+  ed_desc     String?  @db.VarChar(128)
+  ed_extid    String?  @db.VarChar(45)
+  ed_path     String?  @db.VarChar(255)
+  ed_data     Bytes?   @db.MediumBlob
+  ed_thumb    Bytes?   @db.Blob
+  ed_viewer   String?  @default("pdf") @db.VarChar(45)
+  ed_dur      String?  @db.VarChar(45)
+}
+
+model em_comments {
+  id           Int                     @id @default(autoincrement()) @db.UnsignedInt
+  object_id    String                  @db.VarChar(64)
+  created      DateTime                @db.DateTime(0)
+  sender_name  String?                 @db.VarChar(128)
+  sender_id    Int?                    @db.MediumInt
+  sender_ip    BigInt?
+  comment_text String?                 @db.Text
+  admin_reply  em_comments_admin_reply @default(dbgenerated("0"))
+  rating_cache Int                     @default(0)
+  access_key   String?                 @db.VarChar(100)
+  visible      em_comments_visible     @default(dbgenerated("1"))
+
+  @@index([object_id], map: "object_id")
+}
+
+model engagement {
+  id       Int       @id @default(autoincrement())
+  date     DateTime? @db.DateTime(0)
+  e_score  Int?
+  memberid Int?
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model ent_category {
+  Business           String? @db.Text
+  Old_Category       String? @map("Old Category") @db.Text
+  Primary_Category   String? @map("Primary Category") @db.Text
+  Secondary_Category String? @map("Secondary Category") @db.Text
+  Tertiary_Category  String? @map("Tertiary Category") @db.Text
+  Type               String? @db.Text
+  Network            String? @db.Text
+
+  @@ignore
+}
+
+model enterprise_profile {
+  id             Int       @id @default(autoincrement())
+  entid          Int?
+  yelp_profile   String?   @db.Text
+  google_profile String?   @db.Text
+  mod_date       DateTime? @default(now()) @db.DateTime(0)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model eq5d {
+  MO         Int?
+  SC         Int?
+  UA         Int?
+  PD         Int?
+  AD         Int?
+  indexScore Float?
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model events {
+  id            Int       @id @default(autoincrement())
+  title         String?   @db.VarChar(250)
+  taskType      String    @db.VarChar(100)
+  locFrom       String?   @default("") @db.VarChar(200)
+  locFromGeo    String    @db.VarChar(20)
+  locDest       String    @default("") @db.VarChar(200)
+  locDestGeo    String    @db.VarChar(20)
+  tRange        String    @default("") @db.VarChar(255)
+  resourceid    String    @default("") @db.VarChar(45)
+  resourceLabel String?   @db.VarChar(45)
+  StartTime     DateTime? @db.DateTime(0)
+  EndTime       DateTime? @db.DateTime(0)
+  accountid     Int
+  memberid      Int
+  rRule         String?   @default("") @db.VarChar(500)
+  rParentid     Int?      @default(0)
+  share         Int       @default(15) @db.UnsignedSmallInt
+  ev_status     Int       @default(1) @db.SmallInt
+  cpid          Int?
+  isproto       Int?      @default(0)
+  rRuleDesc     String?   @default("") @db.VarChar(512)
+  Trk_status    Int       @default(0)
+  reward        Int?      @default(0)
+  member_roleid Int?      @default(0)
+  details       String?   @db.Text
+  Trk_start     DateTime? @db.Timestamp(0)
+  Trk_end       DateTime? @db.Timestamp(0)
+  narrative     String?   @db.VarChar(255)
+  resourceMeta  String?   @db.Text
+  day_offset    Int?      @default(0)
+}
+
+model events_display {
+  ed_id       Int @id @default(autoincrement())
+  ed_event_id Int
+  ed_status   Int @db.SmallInt
+  ed_memberid Int
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model feature_ent {
+  id       Int       @id @default(autoincrement())
+  entid    Int?
+  title    String?   @db.VarChar(45)
+  subtitle String?   @db.VarChar(128)
+  code     String?   @db.VarChar(45)
+  status   Int?      @default(1)
+  date     DateTime? @db.DateTime(0)
+  state    String?   @db.Text
+}
+
+model folder {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(200)
+}
+
+model goal_careplan {
+  id          Int  @id @default(autoincrement())
+  careplan_id Int?
+  goal_id     Int?
+  display     Int? @default(0)
+}
+
+model goals {
+  id          Int     @id @default(autoincrement())
+  goal_type   String? @db.VarChar(45)
+  goal_title  String? @db.VarChar(45)
+  goal_status Int?    @default(0)
+  entid       Int     @default(0)
+}
+
+model hcc_2016_cf {
+  label String? @db.VarChar(255)
+  cf    String? @db.VarChar(255)
+  id    Int     @id @default(autoincrement())
+}
+
+model hcc_2016_drops {
+  hcc      String? @db.VarChar(45)
+  hcc_drop String? @db.VarChar(45)
+  id       Int     @id @default(autoincrement())
+}
+
+model hcc_icd10 {
+  icd10 String? @db.VarChar(45)
+  hcc   String? @db.VarChar(45)
+  id    Int     @id @default(autoincrement())
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model hotlist {
+  hl_memberid               Int
+  hl_date                   DateTime @db.Date
+  hl_metric                 String   @db.VarChar(64)
+  hl_desc                   String   @db.VarChar(256)
+  hl_risk                   Int      @db.TinyInt
+  hl_status                 Int      @default(0)
+  hl_statusCleared_memberid Int
+
+  @@id([hl_metric, hl_date, hl_memberid])
+}
+
+model importjobs {
+  id            Int       @id @default(autoincrement())
+  startDate     DateTime? @db.DateTime(0)
+  endDate       DateTime? @db.DateTime(0)
+  status        String?   @default("pending") @db.VarChar(16)
+  log           String?   @db.Text
+  jobtype       String?   @db.VarChar(16)
+  resourceid    String?   @db.VarChar(45)
+  accountref    String?   @db.VarChar(128)
+  ptTotal       Int?
+  medicareTotal Int?
+  mccTotal      Int?
+  contact       String?   @db.VarChar(128)
+}
+
+model k_snomed {
+  id_snomed  String? @db.VarChar(45)
+  id_snomed2 String? @db.VarChar(45)
+  icd9       String? @db.VarChar(16)
+  icd10      String? @db.VarChar(16)
+  label      String? @db.VarChar(64)
+  id         Int     @id @default(autoincrement())
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model localregistry {
+  reg_id     Int       @id @default(autoincrement())
+  pt_lname   String?   @db.VarChar(128)
+  pt_fname   String?   @db.VarChar(45)
+  pt_dcdate  DateTime? @db.Date
+  pt_dcHosp  String?   @db.VarChar(128)
+  pt_mid     String?   @db.VarChar(45)
+  reg_status Int       @default(0)
+  pt_dob     DateTime? @db.Date
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model macros {
+  id       Int     @id @default(autoincrement())
+  macro    String? @db.Text
+  label    String? @db.VarChar(45)
+  memberid Int?
+  descr    String? @db.VarChar(128)
+  status   Int?    @default(1)
+  provider String? @db.VarChar(45)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model medack {
+  id           Int      @id @default(autoincrement())
+  ackType      String?  @db.VarChar(4)
+  med_id       Int?
+  member_id    String?  @db.VarChar(45)
+  ackTimestamp DateTime @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model medications {
+  med_id       Int      @id @default(autoincrement())
+  med_rxnorm   String   @db.VarChar(64)
+  med_NDC      String   @db.VarChar(64)
+  med_name     String   @db.VarChar(255)
+  med_sig      String   @db.VarChar(255)
+  med_instr    String   @db.VarChar(255)
+  med_problem  String   @db.VarChar(255)
+  med_freq     Int
+  med_dose     String   @db.VarChar(64)
+  med_doseUnit String   @db.VarChar(64)
+  member_id    Int
+  med_status   Int      @default(1) @db.TinyInt
+  med_start    DateTime @db.Date
+  med_imgPath  String?  @db.VarChar(255)
+  med_dname    String?  @db.VarChar(255)
+  processed    Int?     @default(0)
+
+  @@index([member_id], map: "member_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model meetings {
+  id         Int       @id @default(autoincrement())
+  type       String?   @db.VarChar(45)
+  host_id    Int?
+  invitees   String?   @db.VarChar(128)
+  startTS    DateTime? @db.Timestamp(0)
+  endTS      DateTime? @db.Timestamp(0)
+  tzOffset   Int?
+  title      String?   @db.VarChar(45)
+  title_code String?   @db.VarChar(45)
+  mtg_desc   String?   @db.VarChar(128)
+  host_url   String?   @db.VarChar(128)
+  viewer_url String?   @db.VarChar(128)
+  entid      Int?
+  status     String?   @default("scheduled") @db.VarChar(45)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model member_course {
+  id            Int       @id @default(autoincrement())
+  memberid      Int?
+  course_status String?   @db.VarChar(45)
+  course_sdate  DateTime? @db.DateTime(0)
+  course_edate  DateTime? @db.DateTime(0)
+  last_step     String?   @db.VarChar(45)
+}
+
+model memberinvite {
+  id            Int      @id @default(autoincrement())
+  to_memberid   Int      @default(0)
+  from_memberid Int      @default(0)
+  fb_requestid  String   @db.VarChar(20)
+  status        String   @default("invite") @db.VarChar(100)
+  statusModDate DateTime @default(now()) @db.Timestamp(0)
+  sendCount     Int      @default(0)
+  ent_id        Int      @default(0)
+  token         String?  @db.VarChar(45)
+}
+
+model message {
+  msgid       Int      @id @default(autoincrement())
+  msgMemberid Int
+  msgBody     String   @db.Text
+  subject     String   @db.Text
+  msgCreated  DateTime @default(now()) @db.Timestamp(0)
+  msgMod      DateTime @default(dbgenerated("'0000-00-00 00:00:00'")) @db.Timestamp(0)
+  msgPriority Int      @default(0) @db.SmallInt
+  attach_html String?  @db.Text
+  attach_text String?  @db.Text
+  convid      Int?
+}
+
+model messageattachment {
+  id         Int @id @default(autoincrement())
+  fk_message Int
+}
+
+model messagefolder {
+  id         Int @id @default(autoincrement())
+  id_message Int
+  id_folder  Int
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model messageuser {
+  id          Int     @id @default(autoincrement())
+  msgid       Int
+  msgRead     Int     @default(0)
+  msgMemberid Int
+  folderid    Int     @default(1)
+  dist        Int
+  cat         Int     @default(0)
+  directEmail String? @default("") @db.VarChar(64)
+  directDisp  Int?    @default(0)
+}
+
+model mobiledevice {
+  mdev_id               Int     @id @default(autoincrement())
+  mdev_memberid         Int
+  mdev_uid              String  @db.VarChar(255)
+  mdev_token            String  @db.VarChar(255)
+  mdev_status           Int     @default(1)
+  mdev_phone            String  @db.VarChar(32)
+  mdev_ios_notify_token String? @db.VarChar(128)
+}
+
+model money_balance_log {
+  id               Int      @id @default(autoincrement())
+  date             DateTime @db.DateTime(0)
+  source_a_balance Decimal? @db.Decimal(10, 0)
+  source_b_balance Decimal? @db.Decimal(10, 0)
+  source_c_balance Decimal? @db.Decimal(10, 0)
+}
+
+model msgqueue {
+  mqid         Int      @id @default(autoincrement())
+  msgid        String   @db.VarChar(64)
+  msgData      String   @db.Text
+  msgDate      DateTime @default(now()) @db.Timestamp(0)
+  msgType      String?  @db.VarChar(45)
+  msgMemberid  Int?
+  msgPatientid Int?
+  msgEntid     Int?
+  msgRead      Int?     @default(0) @db.UnsignedInt
+
+  @@index([msgid], map: "msgid")
+}
+
+model notification_endpoints {
+  id          Int       @id @default(autoincrement())
+  client_id   Int?
+  name        String?   @db.VarChar(100)
+  description String?   @db.VarChar(255)
+  url         String?   @db.VarChar(255)
+  is_active   Boolean?
+  create_date DateTime? @db.DateTime(0)
+  update_date DateTime? @db.DateTime(0)
+  api_key     String?   @db.VarChar(255)
+}
+
+model notifications {
+  id               Int       @id @default(autoincrement())
+  endpoint_id      Int?
+  publish_date     DateTime? @db.DateTime(0)
+  queue_message_id Int?
+  message          String?   @db.MediumText
+  success          Int?      @db.TinyInt
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model nurture_queue {
+  id                   Int      @id @default(autoincrement())
+  nq_date              String?  @db.VarChar(45)
+  nq_message           String?  @db.VarChar(1024)
+  nq_email             Boolean? @default(false)
+  nq_sms               Boolean? @default(false)
+  nq_ios_push          Boolean? @default(false)
+  nq_android_push      Boolean? @default(false)
+  nq_status            Int?     @default(0)
+  nq_email_addr        String?  @db.VarChar(255)
+  nq_sms_addr          String?  @db.VarChar(255)
+  nq_ios_push_addr     String?  @db.VarChar(255)
+  nq_android_push_addr String?  @db.VarChar(255)
+  nq_ivr               Boolean? @default(false)
+  nq_ivr_phone         String?  @db.VarChar(45)
+}
+
+model onboard_referral_code {
+  id            Int       @id @default(autoincrement())
+  memberid      Int?
+  referral_code String?   @db.VarChar(45)
+  create_date   DateTime? @db.DateTime(0)
+}
+
+model oncall {
+  id             Int       @default(autoincrement())
+  memberid       Int
+  status         Int?      @default(0)
+  date           DateTime? @default(now()) @db.Timestamp(0)
+  phone          String?   @db.VarChar(45)
+  sms            Int?      @default(1)
+  app            Int?      @default(0)
+  callend        DateTime? @db.Timestamp(0)
+  entid          Int?
+  ringme         Int?      @default(1)
+  oncall_default Int?      @default(0)
+
+  @@id([id, memberid])
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model outcome {
+  id             Int  @id @default(autoincrement())
+  goal_intent    Int? @default(0)
+  goal_status    Int? @default(0)
+  pt_responsive  Int? @default(10)
+  task_effective Int? @default(10)
+}
+
+model payers {
+  id            Int     @id
+  label         String? @db.VarChar(45)
+  address       String? @db.VarChar(128)
+  phone         String? @db.VarChar(45)
+  statesabrv    String? @db.VarChar(128)
+  states        String? @db.Text
+  homeurl       String? @db.VarChar(128)
+  providerhome  String? @db.VarChar(128)
+  credentialing String? @db.VarChar(128)
+  policyhome    String? @db.VarChar(128)
+  policysearch  String? @db.VarChar(45)
+}
+
+model prefs {
+  pref_id    Int    @id @default(autoincrement())
+  member_id  Int
+  pref_key   String @db.VarChar(255)
+  pref_value String @db.VarChar(1024)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model problems {
+  prob_id     Int       @id @default(autoincrement())
+  icd9_code   String?   @db.VarChar(45)
+  icd10_code  String?   @db.VarChar(45)
+  snomed_code String?   @db.VarChar(45)
+  problem     String?   @db.VarChar(45)
+  acuity      String?   @default("acute") @db.VarChar(45)
+  activity    String?   @default("active") @db.VarChar(45)
+  startDate   DateTime? @db.Date
+  endDate     DateTime? @db.Date
+  comments    String?   @default("") @db.VarChar(255)
+  selfLimited Int?      @default(0)
+  lifetime    Int?      @default(0)
+  ccs_code    String    @db.VarChar(45)
+  cci         String?   @default("1") @db.VarChar(8)
+  memberid    Int?
+  processed   Int?      @default(0)
+  dateMod     DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model pt_concepts {
+  id           Int     @id @default(autoincrement())
+  snocode      String? @db.VarChar(45)
+  concept_desc String? @db.VarChar(45)
+  concept_type String? @db.VarChar(45)
+}
+
+model ptsumm {
+  ps_id       Int      @id @default(autoincrement())
+  ps_name     String   @db.VarChar(64)
+  ps_desc     String   @db.VarChar(256)
+  ps_date     DateTime @default(now()) @db.Timestamp(0)
+  ps_status   String   @default("active") @db.VarChar(16)
+  ps_source   String   @db.VarChar(128)
+  ps_format   String   @default("CCD") @db.VarChar(8)
+  ps_data     String   @db.MediumText
+  ps_memberid Int
+  ps_default  Int?     @default(0)
+}
+
+model readmitrisk {
+  id           Int       @id @default(autoincrement())
+  memberid     Int?
+  chf_score    String?   @db.VarChar(45)
+  chf_date     DateTime? @db.DateTime(0)
+  ami_score    String?   @db.VarChar(45)
+  ami_date     DateTime? @db.DateTime(0)
+  pne_score    String?   @db.VarChar(45)
+  pne_date     DateTime? @db.DateTime(0)
+  boost_date   DateTime? @db.DateTime(0)
+  boost_data   String?   @db.VarChar(32)
+  boost_total  Int?
+  adlK_score   String?   @db.VarChar(45)
+  sipp_score   String?   @db.VarChar(45)
+  phq9_score   String?   @db.VarChar(45)
+  duscos_score String?   @db.VarChar(45)
+}
+
+model recentviewed {
+  patientid Int
+  memberid  Int?
+  time      DateTime? @default(now()) @db.Timestamp(0)
+  id        Int       @id @default(autoincrement())
+}
+
+model redemption_giftcard_archives {
+  id                      Int       @id @default(autoincrement()) @db.UnsignedInt
+  rg__giftcard_id         Int       @db.UnsignedInt
+  rg__item_id             Int?
+  rg__value               Float?
+  rg__redem_value         Float     @default(0)
+  rg__inventory_type      String?   @db.VarChar(50)
+  rg__inventory_remaining Int?
+  rg__language            String?   @db.VarChar(20)
+  rg__tags                String?   @db.VarChar(255)
+  rg__cpid                String?   @db.VarChar(100)
+  rg__priority            Int?      @db.TinyInt
+  rg__custom_title        String?   @db.VarChar(200)
+  rg__updated_at          DateTime?
+  created_at              DateTime?
+  reason                  String?   @db.MediumText
+  member_id_causing       Int?      @db.UnsignedInt
+}
+
+model redemption_giftcard_item_archives {
+  id                              Int       @id @default(autoincrement()) @db.UnsignedInt
+  created_at                      DateTime?
+  reason                          String?   @db.MediumText
+  member_id_causing               Int?      @db.UnsignedInt
+  rgi__item_id                    Int       @db.UnsignedInt
+  rgi__brand_id                   Int
+  rgi__provider_id                Int?
+  rgi__utid                       String?   @db.VarChar(255)
+  rgi__rewardName                 String?   @db.VarChar(255)
+  rgi__currencyCode               String?   @db.VarChar(255)
+  rgi__status                     String?   @db.VarChar(255)
+  rgi__reward_status              String?   @default("active") @db.VarChar(50)
+  rgi__reward_availability        String?   @default("unknown") @db.VarChar(50)
+  rgi__valueType                  String?   @db.VarChar(255)
+  rgi__rewardType                 String?   @db.VarChar(255)
+  rgi__isWholeAmountValueRequired String?   @db.VarChar(255)
+  rgi__minValue                   Float?
+  rgi__maxValue                   Float?
+  rgi__createdDate                String?   @db.VarChar(255)
+  rgi__lastUpdateDate             String?   @db.VarChar(255)
+  rgi__countries_json             String?   @db.Text
+  rgi__credentialTypes_json       String?   @db.Text
+  rgi__redemptionInstructions     String?   @db.Text
+  rgi__rebate_provider_percentage Decimal?  @db.Decimal(13, 4)
+  rgi__rebate_base_percentage     Decimal?  @db.Decimal(13, 4)
+  rgi__rebate_customer_percentage Decimal?  @db.Decimal(13, 4)
+  rgi__rebate_cp_percentage       Decimal?  @db.Decimal(13, 4)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model ref_icd10_keywords {
+  I10_Code String? @db.VarChar(45)
+  Keyword  String? @db.VarChar(255)
+  Type     Int?
+
+  @@index([Keyword], map: "index1")
+  @@ignore
+}
+
+model ref_kpsnomed2014 {
+  concept_sctid String? @db.VarChar(45)
+  icd9          String? @db.VarChar(45)
+  icd10         String? @db.VarChar(45)
+  kp_pt_term    String? @db.VarChar(45)
+  id            Int     @id @default(autoincrement())
+}
+
+model referral_reminder_date {
+  id             Int       @id @default(autoincrement())
+  reminder_date  DateTime? @db.DateTime(0)
+  cp_referral_id Int?
+}
+
+model requests_responses {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  inserted_at DateTime
+  updated_at  DateTime?
+  request     String?   @db.MediumText
+  response    String?   @db.MediumText
+}
+
+model resources {
+  rsc_id       Int      @id @default(autoincrement())
+  rsc_eventid  Int
+  rsc_memberid Int
+  rsc_recpid   Int
+  rsc_modDate  DateTime @default(now()) @db.Timestamp(0)
+  rsc_type     String   @default("pic") @db.VarChar(10)
+  rsc_path     String   @db.VarChar(120)
+  rsc_data     Bytes    @db.MediumBlob
+  rsc_thumb    Bytes    @db.Blob
+  rsc_title    String   @db.VarChar(45)
+  rsc_extid    String   @db.VarChar(45)
+  rsc_label    String?  @db.VarChar(128)
+}
+
+model rewards {
+  pt_id   Int  @id
+  rewards Int?
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model risk {
+  id             Int       @id @default(autoincrement())
+  type           String?   @db.VarChar(45)
+  score          String?   @db.VarChar(45)
+  risk_dir       Int?      @default(1)
+  segment_label  String?   @db.VarChar(45)
+  calc_timestamp DateTime? @default(now()) @db.Timestamp(0)
+  memberid       Int?
+}
+
+model roles {
+  roleid   Int    @id @db.UnsignedInt
+  roleName String @unique(map: "roleName") @db.VarChar(50)
+}
+
+model rrdxlist {
+  dxCode  String? @db.VarChar(16)
+  ccsCode Int?
+  id      Int     @id @default(autoincrement())
+}
+
+model scorecard_act {
+  sc_date     DateTime @db.Date
+  sc_memberid Int
+  sc_total    Int      @default(0)
+  sc_task     Int      @default(0)
+  sc_msg      Int      @default(0)
+  sc_comment  Int      @default(0)
+  sc_res      Int      @default(0)
+
+  @@id([sc_date, sc_memberid])
+}
+
+model scorecard_clin {
+  sc_date         DateTime @db.Date
+  sc_memberid     Int
+  sc_weight_num   Int      @db.TinyInt
+  sc_fsbg_num     Int      @db.TinyInt
+  sc_survey_num   Int      @db.TinyInt
+  sc_weight_denom Int      @db.TinyInt
+  sc_fsbg_denom   Int      @db.TinyInt
+  sc_survey_denom Int      @db.TinyInt
+
+  @@id([sc_date, sc_memberid])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model searchmedicationname {
+  name String @db.VarChar(255)
+
+  @@ignore
+}
+
+model sessions {
+  id            Int       @id @default(autoincrement())
+  sessionUID    String    @db.VarChar(50)
+  startTime     DateTime  @default(now()) @db.Timestamp(0)
+  endTime       DateTime? @db.Timestamp(0)
+  ipAddress     String    @db.VarChar(20)
+  memberid      Int
+  member_roleid Int?
+  ent_type      String?   @db.VarChar(45)
+}
+
+model sponsormsg {
+  sm_id          Int      @id @default(autoincrement())
+  sm_imgSrc      String   @db.VarChar(256)
+  sm_title       String   @db.VarChar(256)
+  sm_desc        String   @db.Text
+  sm_date        DateTime @default(now()) @db.Timestamp(0)
+  sm_url         String   @db.VarChar(256)
+  sm_status      Int      @default(0) @db.TinyInt
+  sm_viewdate    DateTime @default(dbgenerated("'0000-00-00 00:00:00'")) @db.Timestamp(0)
+  sm_memberid    Int
+  sm_rating      Int
+  sm_infoGraphic String   @db.VarChar(256)
+}
+
+model status {
+  id          Int     @id @default(autoincrement())
+  description String? @db.VarChar(20)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model survey {
+  sv_id         Int      @id @default(autoincrement())
+  sv_path       String?  @db.VarChar(256)
+  sv_name       String   @db.VarChar(128)
+  sv_desc       String   @db.VarChar(256)
+  ent_id        Int      @default(0)
+  sv_status     String   @default("active") @db.VarChar(32)
+  sv_date       DateTime @default(now()) @db.Timestamp(0)
+  sv_reportPath String?  @db.VarChar(128)
+  sv_type       String?  @db.VarChar(45)
+  sv_cat        String?  @db.VarChar(45)
+}
+
+model system_activity {
+  id            Int       @id @default(autoincrement())
+  type          String?   @db.VarChar(100)
+  severity      String?   @db.VarChar(100)
+  description   String?   @db.Text
+  meta_data     String?   @db.Text
+  member_id     Int?
+  enterprise_id Int?
+  reward_id     Int?
+  reward_type   String?   @db.VarChar(25)
+  ip_address    String?   @db.VarChar(25)
+  device_info   String?   @db.VarChar(255)
+  activity_date DateTime? @default(now()) @db.DateTime(0)
+}
+
+model systemdevice {
+  sysdeviceid                 Int    @id @default(autoincrement())
+  sdv_name                    String @db.VarChar(64)
+  sdv_desc                    String @db.VarChar(128)
+  sdv_photopath               String @db.VarChar(64)
+  sdv_service                 String @db.VarChar(32)
+  consumer_oauth_token        String @db.VarChar(64)
+  consumer_oauth_token_secret String @db.VarChar(64)
+  sdv_status                  String @default("active") @db.VarChar(32)
+}
+
+model team {
+  id      Int     @id @default(autoincrement())
+  title   String? @db.VarChar(45)
+  details String? @db.VarChar(128)
+  status  Int?    @default(1)
+  entid   Int?
+}
+
+model team_member {
+  id        Int       @id @default(autoincrement())
+  teamid    Int?
+  memberid  Int?
+  status    Int?      @default(1)
+  timestamp DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model team_patient {
+  id        Int       @id @default(autoincrement())
+  teamid    Int?
+  patientid Int?
+  status    Int?      @default(1)
+  timestamp DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model tenant_customer_account {
+  id         Int     @id @default(autoincrement())
+  cust_id    String? @unique(map: "cust_id_UNIQUE") @db.VarChar(45)
+  account_id String? @db.VarChar(45)
+  tenant_id  String? @db.VarChar(45)
+}
+
+model tenant_registry_redemptions {
+  id              Int     @id @default(autoincrement())
+  tenant_id       Int?
+  redemption_id   Int?
+  redemption_type String? @db.VarChar(45)
+}
+
+model tokbox {
+  id          Int     @id @default(autoincrement())
+  sessionId   String? @db.VarChar(128)
+  sessionName String? @db.VarChar(128)
+  status      Int?    @default(1)
+}
+
+model trk_log {
+  trk_id          Int      @id @default(autoincrement())
+  trk_path        String   @db.VarChar(256)
+  trk_lm_memberid Int
+  trk_sm_memberid Int
+  trk_ts          DateTime @default(now()) @db.Timestamp(0)
+  trk_lm_roleid   Int
+  trk_sm_roleid   Int
+  trk_tag         String   @default("") @db.VarChar(64)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model vitals {
+  vitalsid   Int       @id @default(autoincrement())
+  vt_type    String    @db.VarChar(32)
+  vt_val     Float     @db.Float
+  vt_val2    Float     @db.Float
+  vt_unit    String    @db.VarChar(32)
+  vt_date    DateTime  @db.DateTime(0)
+  memberid   Int
+  vt_warn_hi Int       @default(0) @db.TinyInt
+  vt_warn_lo Int       @default(0) @db.TinyInt
+  vt_goal    Int?      @default(0) @db.TinyInt
+  vt_tag     String?   @db.VarChar(45)
+  modDate    DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model voucher_type {
+  id     Int    @id
+  v_type String @db.VarChar(15)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model well_for_carepoynt_missing {
+  email     String?   @db.VarChar(128)
+  member_id Int?      @db.UnsignedInt
+  vendor_id Int?      @db.UnsignedInt
+  date      DateTime? @db.DateTime(0)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model well_for_carepoynt_new {
+  member_id Int?      @db.UnsignedInt
+  email     String?   @db.VarChar(128)
+  date      DateTime? @db.DateTime(0)
+  vendor_id Int?      @db.UnsignedInt
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model well_new_missing_for_carepoynt {
+  email     String?   @db.VarChar(128)
+  member_id Int?      @db.UnsignedInt
+  vendor_id Int?      @db.UnsignedInt
+  date      DateTime? @db.DateTime(0)
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model work_items {
+  id        Int       @id @default(autoincrement())
+  wrkType   String?   @db.VarChar(128)
+  commfrom  String?   @db.VarChar(45)
+  commto    String?   @db.VarChar(45)
+  dur       Int?
+  rid       String?   @db.VarChar(45)
+  date      DateTime? @db.DateTime(0)
+  notes     String?   @db.VarChar(255)
+  patientid Int?
+  memberid  Int?
+}
+
+model workflow_checkpoints {
+  workflow_id         String    @id @db.VarChar(100)
+  last_processed_id   Int?
+  last_processed_date DateTime? @db.DateTime(0)
+  last_run_date       DateTime? @db.DateTime(0)
+  updated_at          DateTime? @default(now()) @db.DateTime(0)
+}
+
+enum em_comments_admin_reply {
+  NO  @map("0")
+  YES @map("1")
+}
+
+enum em_comments_visible {
+  HIDDEN  @map("0")
+  VISIBLE @map("1")
+}

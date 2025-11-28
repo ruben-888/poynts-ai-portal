@@ -1,0 +1,166 @@
+"use client";
+
+import { ColumnDef } from "@tanstack/react-table";
+
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+
+import { labels, priorities, statuses } from "./data/data";
+// import { Task } from "./data/schema"
+import { DataTableColumnHeader } from "./data-table-column-header";
+import { DataTableRowActions, RowAction } from "./data-table-row-actions";
+
+// Define a hook to provide actions for the data table
+const useTableActions = (): RowAction<any>[] => {
+  return [
+    {
+      label: "Edit",
+      onClick: (row) => {
+        console.log("Edit", row);
+        // Add your edit logic here
+      },
+      shortcut: "⌘E",
+    },
+    {
+      label: "View",
+      onClick: (row) => {
+        console.log("View", row);
+        // Add your view logic here
+      },
+      shortcut: "⌘V",
+    },
+    {
+      label: "Delete",
+      onClick: (row) => {
+        console.log("Delete", row);
+        // Add your delete logic here
+      },
+      isDestructive: true,
+      shortcut: "⌘⌫",
+    },
+  ];
+};
+
+// Create a component to use the hook
+const TableActionsCell = ({ row }: { row: any }) => {
+  const actions = useTableActions();
+  return <DataTableRowActions row={row} actions={actions} />;
+};
+
+export const columns: any = [
+  {
+    id: "select",
+    header: ({ table }: any) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value: any) =>
+          table.toggleAllPageRowsSelected(!!value)
+        }
+        aria-label="Select all"
+        className="translate-y-[2px]"
+      />
+    ),
+    cell: ({ row }: any) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value: any) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+        className="translate-y-[2px]"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "id",
+    header: ({ column }: any) => (
+      <DataTableColumnHeader column={column} title="Task" />
+    ),
+    cell: ({ row }: any) => (
+      <div className="w-[80px]">{row.getValue("id")}</div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "title",
+    header: ({ column }: any) => (
+      <DataTableColumnHeader column={column} title="Title" />
+    ),
+    cell: ({ row }: any) => {
+      const label = labels.find(
+        (label: any) => label.value === row.original.label,
+      );
+
+      return (
+        <div className="flex space-x-2">
+          {label && <Badge variant="outline">{label.label}</Badge>}
+          <span className="max-w-[500px] truncate font-medium">
+            {row.getValue("title")}
+          </span>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }: any) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ row }: any) => {
+      const status = statuses.find(
+        (status: any) => status.value === row.getValue("status"),
+      );
+
+      if (!status) {
+        return null;
+      }
+
+      return (
+        <div className="flex w-[100px] items-center">
+          {status.icon && (
+            <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+          )}
+          <span>{status.label}</span>
+        </div>
+      );
+    },
+    filterFn: (row: any, id: any, value: any) => {
+      return value.includes(row.getValue(id));
+    },
+  },
+  {
+    accessorKey: "priority",
+    header: ({ column }: any) => (
+      <DataTableColumnHeader column={column} title="Priority" />
+    ),
+    cell: ({ row }: any) => {
+      const priority = priorities.find(
+        (priority: any) => priority.value === row.getValue("priority"),
+      );
+
+      if (!priority) {
+        return null;
+      }
+
+      return (
+        <div className="flex items-center">
+          {priority.icon && (
+            <priority.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+          )}
+          <span>{priority.label}</span>
+        </div>
+      );
+    },
+    filterFn: (row: any, id: any, value: any) => {
+      return value.includes(row.getValue(id));
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }: any) => <TableActionsCell row={row} />,
+  },
+];

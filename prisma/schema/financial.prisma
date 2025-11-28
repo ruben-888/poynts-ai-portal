@@ -1,0 +1,162 @@
+model poynts_bank_closing_monthly {
+  id                                       Int       @id @default(autoincrement())
+  customer_id                              Int?
+  period_start_date                        DateTime? @db.Date
+  period_end_date                          DateTime? @db.Date
+  period_type                              String?   @db.VarChar(100)
+  date_of_closing                          DateTime? @db.Date
+  closed_by_user_id                        Int?
+  poynts_bank_balance_total                Decimal?  @db.Decimal(10, 2)
+  poynts_bank_balance_reserve              Decimal?  @db.Decimal(10, 2)
+  poynts_balance_source_a                  Decimal?  @db.Decimal(10, 2)
+  poynts_balance_source_b                  Decimal?  @db.Decimal(10, 2)
+  poynts_balance_source_c                  Decimal?  @db.Decimal(10, 2)
+  money_balance_source_a                   Decimal?  @db.Decimal(10, 2)
+  money_balance_source_b                   Decimal?  @db.Decimal(10, 2)
+  money_balance_source_c                   Decimal?  @db.Decimal(10, 2)
+  rebate_bank_balance_total                Decimal?  @db.Decimal(10, 2)
+  rebate_bank_balance_source_a             Decimal?  @db.Decimal(10, 2)
+  rebate_bank_balance_source_b             Decimal?  @db.Decimal(10, 2)
+  rebate_bank_balance_source_c             Decimal?  @db.Decimal(10, 2)
+  rebate_amount_total                      Decimal?  @db.Decimal(10, 2)
+  rebate_amount_source_a                   Decimal?  @db.Decimal(10, 2)
+  rebate_amount_source_b                   Decimal?  @db.Decimal(10, 2)
+  rebate_amount_source_c                   Decimal?  @db.Decimal(10, 2)
+  provider_rebate_amount_total             Decimal?  @db.Decimal(10, 2)
+  provider_rebate_amount_source_a          Decimal?  @db.Decimal(10, 2)
+  provider_rebate_amount_source_b          Decimal?  @db.Decimal(10, 2)
+  provider_rebate_amount_source_c          Decimal?  @db.Decimal(10, 2)
+  rebate_accumulated_total                 Decimal?  @db.Decimal(10, 2)
+  rebate_accumulated_source_a              Decimal?  @db.Decimal(10, 2)
+  rebate_accumulated_source_b              Decimal?  @db.Decimal(10, 2)
+  rebate_accumulated_source_c              Decimal?  @db.Decimal(10, 2)
+  internal_transaction_count_total         Int?
+  internal_transaction_count_source_a      Int?
+  internal_transaction_count_source_b      Int?
+  internal_transaction_count_source_c      Int?
+  provider_transaction_count_total         Int?
+  provider_transaction_count_source_a      Int?
+  provider_transaction_count_source_b      Int?
+  provider_transaction_count_source_c      Int?
+  internal_transaction_amount_total        Decimal?  @db.Decimal(10, 2)
+  internal_transaction_amount_source_a     Decimal?  @db.Decimal(10, 2)
+  internal_transaction_amount_source_b     Decimal?  @db.Decimal(10, 2)
+  internal_transaction_amount_source_c     Decimal?  @db.Decimal(10, 2)
+  provider_transaction_amount_total        Decimal?  @db.Decimal(10, 2)
+  provider_transaction_amount_source_a     Decimal?  @db.Decimal(10, 2)
+  provider_transaction_amount_source_b     Decimal?  @db.Decimal(10, 2)
+  provider_transaction_amount_source_c     Decimal?  @db.Decimal(10, 2)
+  transaction_difference_count             Int?
+  transaction_difference_amount            Decimal?  @db.Decimal(10, 2)
+  transaction_difference_amount_percentage Decimal?  @db.Decimal(10, 2)
+}
+
+model poynts_bank_journal {
+  id          Int       @id @default(autoincrement())
+  entry_date  DateTime? @db.DateTime(0)
+  amount      Decimal?  @db.Decimal(10, 2)
+  from_entry  Int?
+  to_entry    Int?
+  entry_id    String?   @db.VarChar(100)
+  entry_type  String?   @db.VarChar(200)
+  entry_notes String?   @db.VarChar(254)
+
+  // Relations
+  fromLedger poynts_bank_ledger? @relation("JournalFromLedger", fields: [from_entry], references: [id])
+  toLedger   poynts_bank_ledger? @relation("JournalToLedger", fields: [to_entry], references: [id])
+}
+
+model poynts_bank_ledger {
+  id                 Int      @id @default(autoincrement())
+  client_bank_id     Int
+  amount             Decimal  @db.Decimal(25, 2)
+  transaction_date   DateTime @db.DateTime(0)
+  billing_reference  String   @default("") @db.VarChar(254)
+  notes              String   @db.Text
+  provider_reference String?  @db.VarChar(75)
+  journal_entry_id   BigInt?
+  reconciled         Int?     @default(0) @db.TinyInt
+
+  // Relations
+  journalsFrom poynts_bank_journal[] @relation("JournalFromLedger")
+  journalsTo   poynts_bank_journal[] @relation("JournalToLedger")
+  bank         cp_client_bank        @relation(fields: [client_bank_id], references: [id])
+}
+
+model provider_deposit_journal {
+  id                  Int       @id @default(autoincrement())
+  jounal_date         DateTime  @db.DateTime(0)
+  balance             Decimal?  @db.Decimal(25, 0)
+  source_account      Int
+  destination_account Int
+  amount              Decimal   @db.Decimal(25, 0)
+  reference_number    String?   @db.VarChar(50)
+  post_date           DateTime? @db.DateTime(0)
+  notes               String?   @db.TinyText
+  provider_id         Int?
+}
+
+model poynts_bank_closing {
+  id                                       Int       @id @default(autoincrement())
+  customer_id                              Int?
+  period_start_date                        DateTime? @db.Date
+  period_end_date                          DateTime? @db.Date
+  period_type                              String?   @db.VarChar(100)
+  date_of_closing                          DateTime? @db.Date
+  closed_by_user_id                        Int?
+  poynts_bank_balance_total                Decimal?  @db.Decimal(10, 2)
+  poynts_bank_balance_reserve              Decimal?  @db.Decimal(10, 2)
+  poynts_balance_source_a                  Decimal?  @db.Decimal(10, 2)
+  poynts_balance_source_b                  Decimal?  @db.Decimal(10, 2)
+  poynts_balance_source_c                  Decimal?  @db.Decimal(10, 2)
+  money_balance_source_a                   Decimal?  @db.Decimal(10, 2)
+  money_balance_source_b                   Decimal?  @db.Decimal(10, 2)
+  money_balance_source_c                   Decimal?  @db.Decimal(10, 2)
+  rebate_bank_balance_total                Decimal?  @db.Decimal(10, 2)
+  rebate_bank_balance_source_a             Decimal?  @db.Decimal(10, 2)
+  rebate_bank_balance_source_b             Decimal?  @db.Decimal(10, 2)
+  rebate_bank_balance_source_c             Decimal?  @db.Decimal(10, 2)
+  rebate_amount_total                      Decimal?  @db.Decimal(10, 2)
+  rebate_amount_source_a                   Decimal?  @db.Decimal(10, 2)
+  rebate_amount_source_b                   Decimal?  @db.Decimal(10, 2)
+  rebate_amount_source_c                   Decimal?  @db.Decimal(10, 2)
+  provider_rebate_amount_total             Decimal?  @db.Decimal(10, 2)
+  provider_rebate_amount_source_a          Decimal?  @db.Decimal(10, 2)
+  provider_rebate_amount_source_b          Decimal?  @db.Decimal(10, 2)
+  provider_rebate_amount_source_c          Decimal?  @db.Decimal(10, 2)
+  rebate_accumulated_total                 Decimal?  @db.Decimal(10, 2)
+  rebate_accumulated_source_a              Decimal?  @db.Decimal(10, 2)
+  rebate_accumulated_source_b              Decimal?  @db.Decimal(10, 2)
+  rebate_accumulated_source_c              Decimal?  @db.Decimal(10, 2)
+  internal_transaction_count_total         Int?
+  internal_transaction_count_source_a      Int?
+  internal_transaction_count_source_b      Int?
+  internal_transaction_count_source_c      Int?
+  provider_transaction_count_total         Int?
+  provider_transaction_count_source_a      Int?
+  provider_transaction_count_source_b      Int?
+  provider_transaction_count_source_c      Int?
+  internal_transaction_amount_total        Decimal?  @db.Decimal(10, 2)
+  internal_transaction_amount_source_a     Decimal?  @db.Decimal(10, 2)
+  internal_transaction_amount_source_b     Decimal?  @db.Decimal(10, 2)
+  internal_transaction_amount_source_c     Decimal?  @db.Decimal(10, 2)
+  provider_transaction_amount_total        Decimal?  @db.Decimal(10, 2)
+  provider_transaction_amount_source_a     Decimal?  @db.Decimal(10, 2)
+  provider_transaction_amount_source_b     Decimal?  @db.Decimal(10, 2)
+  provider_transaction_amount_source_c     Decimal?  @db.Decimal(10, 2)
+  transaction_difference_count             Int?
+  transaction_difference_amount            Decimal?  @db.Decimal(10, 2)
+  transaction_difference_amount_percentage Decimal?  @db.Decimal(10, 2)
+  days_transaction_amount_source_a         Decimal?  @map("7days_transaction_amount_source_a") @db.Decimal(10, 2)
+  days_transaction_amount_source_b         Decimal?  @map("7days_transaction_amount_source_b") @db.Decimal(10, 2)
+  days_transaction_amount_source_c         Decimal?  @map("7days_transaction_amount_source_c") @db.Decimal(10, 2)
+  days_transaction_count_source_a          Int?      @map("7days_transaction_count_source_a")
+  days_transaction_count_source_b          Int?      @map("7days_transaction_count_source_b")
+  days_transaction_count_source_c          Int?      @map("7days_transaction_count_source_c")
+  days_daily_transaction_amount_source_a   Decimal   @map("7days_daily_transaction_amount_source_a") @db.Decimal(10, 2)
+  days_daily_transaction_amount_source_b   Decimal   @map("7days_daily_transaction_amount_source_b") @db.Decimal(10, 2)
+  days_daily_transaction_amount_source_c   Decimal   @map("7days_daily_transaction_amount_source_c") @db.Decimal(10, 2)
+  days_daily_transaction_count_source_a    Int       @map("7days_daily_transaction_count_source_a")
+  days_daily_transaction_count_source_b    Int       @map("7days_daily_transaction_count_source_b")
+  days_daily_transaction_count_source_c    Int       @map("7days_daily_transaction_count_source_c")
+}

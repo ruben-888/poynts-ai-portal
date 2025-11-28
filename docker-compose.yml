@@ -1,0 +1,13 @@
+name: cp_portal
+
+services:
+  portal:
+      build:
+        context: .
+        dockerfile: .devcontainer/Dockerfile
+        args:
+          IMAGE_VERSION: "1"
+          NODE_VERSION: "22"
+          IMAGE_VARIANT: "bookworm"
+      volumes:
+        - ./:/code

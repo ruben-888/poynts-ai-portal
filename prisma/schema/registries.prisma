@@ -1,0 +1,57 @@
+model redemption_registries {
+  id                Int     @id @default(autoincrement()) @db.UnsignedInt
+  registry_group_id Int     @db.UnsignedInt
+  redemption_id     Int     @db.UnsignedInt
+  redemption_type   String? @db.VarChar(255)
+  display_order     Int?
+
+  // Relation to registry group
+  registry_group redemption_registry_groups @relation(fields: [registry_group_id], references: [id])
+}
+
+model redemption_registry_enterprises {
+  id                Int  @id @default(autoincrement()) @db.UnsignedInt
+  registry_group_id Int? @db.UnsignedInt
+  ent_id            Int? @db.UnsignedInt
+}
+
+model redemption_registry_groups {
+  id           Int       @id @default(autoincrement()) @db.UnsignedInt
+  ent_id       Int       @db.UnsignedInt
+  name         String?   @db.VarChar(255)
+  created_date DateTime? @db.DateTime(0)
+  deleted_date DateTime? @db.DateTime(0)
+
+  // Relations
+  enterprise enterprise @relation(fields: [ent_id], references: [ent_id])
+  redemption_registries redemption_registries[]
+}
+
+model redemption_registry_tag_map {
+  id          Int @id @default(autoincrement()) @db.UnsignedInt
+  registry_id Int
+  tag_id      Int
+}
+
+model redemption_tags {
+  tag_id   Int     @id @default(autoincrement()) @db.UnsignedInt
+  tag_name String? @db.VarChar(50)
+}
+
+model redemptions_tag_map {
+  id              Int     @id @default(autoincrement())
+  redemption_id   Int?
+  redemption_type String? @db.VarChar(45)
+  tag_id          Int?
+}
+
+model enterprise_redemptions {
+  id              Int    @id @default(autoincrement()) @db.UnsignedInt
+  entid           Int
+  redemption_id   Int
+  redemption_type String @db.VarChar(50)
+  value           Float? @default(0)
+  redem_value     Float  @default(0)
+  display_order   Int?
+  catalog_id      Int?
+}

@@ -1,0 +1,39 @@
+name: Manual Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - "dev"
+
+jobs:
+  do-build-push-portal-manual:
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-portal-image
+      cancel-in-progress: false
+    uses: ./.github/workflows/build-push-ar.yml
+    with:
+      DOCKER_DOCKERFILE: "docker/Dockerfile"
+      DOCKER_IMAGE_TAG: "env-${{ inputs.environment }}"
+      GCP_PROJECT_ID: "platform-common-457117"
+      GCP_AR_REPO_NAME: "platform-repository"
+    secrets:
+      GCP_ACCESS_KEY: ${{ secrets.GCP_ACCESS_KEY }}
+
+  do-update-image-portal-manual:
+    needs:
+      - do-build-push-portal-manual
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-portal-service
+      cancel-in-progress: false
+    uses: ./.github/workflows/update-image-cr.yml
+    with:
+      GCP_PROJECT_ID: "platform-dev-456920"
+      AR_IMAGE_URI: ${{ needs.do-build-push-portal-manual.outputs.IMAGE_URI }}
+    secrets:
+      GCP_ACCESS_KEY: ${{ secrets.GCP_ACCESS_KEY }}

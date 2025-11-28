@@ -1,0 +1,35 @@
+name: Update Image
+
+on:
+  workflow_call:
+    inputs:
+      GCP_PROJECT_ID:
+        description: "ID of the GCP project."
+        required: true
+        type: string
+      AR_IMAGE_URI:
+        description: "URI of the AR image to deploy."
+        required: true
+        type: string
+    secrets:
+      GCP_ACCESS_KEY:
+        required: true
+
+jobs:
+  build-push:
+    name: Deploy Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+
+    steps:
+      - name: Setup Gcloud Auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: ${{ inputs.GCP_PROJECT_ID }}
+          credentials_json: ${{ secrets.GCP_ACCESS_KEY }}
+      
+      - name: Update Service
+        run: |
+          GCP_SERVICE=$(gcloud --project ${{ inputs.GCP_PROJECT_ID }} run services list --format="csv(name,region)" | grep platform-portal-service | cut -d',' -f1)
+          GCP_REGION=$(gcloud --project ${{ inputs.GCP_PROJECT_ID }} run services list --format="csv(name,region)" | grep platform-portal-service | cut -d',' -f2)
+          gcloud --project ${{ inputs.GCP_PROJECT_ID }} run deploy ${GCP_SERVICE} --image ${{ inputs.AR_IMAGE_URI }} --region ${GCP_REGION} 

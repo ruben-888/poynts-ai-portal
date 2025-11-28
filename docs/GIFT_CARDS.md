@@ -1,0 +1,122 @@
+# Gift Card Reward System Structure
+
+This document explains the hierarchical structure of how gift cards are managed in the CarePoynt system through three main models.
+
+## Gift Card Providers
+
+Before diving into the models, it's important to understand that gift cards are sourced from external providers:
+- Examples: TangoCard, Blackhawk Network, Amazon
+- These providers are the actual source of gift cards
+- Each provider has their own API and integration requirements
+- Providers are referenced in the `providers` table and linked via `provider_id` in the gift card items
+
+```prisma
+model providers {
+  provider_id   Int     @id
+  provider_name String  // e.g., "TangoCard"
+  api_key       String?
+  status        String?
+  // ... other provider-specific fields
+}
+```
+
+## Level 1: Brands (`redemption_giftcard_brands`)
+
+The highest level of abstraction - representing merchants/retailers.
+
+```prisma
+model redemption_giftcard_brands {
+  brand_id         Int     @id
+  brandKey         String  // e.g., "AMZN"
+  brandName        String? // e.g., "Amazon.com"
+  description      String?
+  terms            String?
+  imageUrls_json   String?
+}
+```
+
+Example:
+- Brand: Amazon
+- Contains: Brand identity, terms, images, and general merchant information
+- Purpose: Manages the top-level merchant relationship
+
+## Level 2: Gift Card Items (`redemption_giftcard_items`)
+
+The intermediate level defining types/templates of available gift cards.
+
+```prisma
+model redemption_giftcard_items {
+  item_id                    Int      @id
+  brand_id                   Int      // Links to brand
+  provider_id                Int?     // Links to the provider (e.g., TangoCard)
+  minValue                   Float?
+  maxValue                   Float?
+  rebate_provider_percentage Decimal?
+  rebate_base_percentage     Decimal?
+  rebate_customer_percentage Decimal?
+  rebate_cp_percentage      Decimal?
+}
+```
+
+Key Features:
+- Links to specific brands
+- Links to specific providers (TangoCard, Blackhawk, etc.)
+- Defines value constraints (fixed or variable)
+- Contains provider-specific details
+- Manages rebate structure
+- Can be either:
+  - Fixed value (e.g., "$50 Amazon Card")
+  - Variable value (e.g., "Amazon Card $25-$500")
+
+## Level 3: Gift Cards (`redemption_giftcards`)
+
+The lowest level representing actual gift card instances.
+
+```prisma
+model redemption_giftcards {
+  giftcard_id         Int       @id
+  item_id             Int       // Links to gift card item
+  value               Float     // Actual value
+  redem_value         Float     // Redemption value
+  inventory_type      String    // "unlimited" or limited
+  inventory_remaining Int
+}
+```
+
+Purpose:
+- Represents actual issuable/issued gift cards
+- Tracks specific values and inventory
+- Links to the item template
+
+## Relationship Flow
+
+```mermaid
+graph TD
+    P[Provider: TangoCard] --> B[Brand: Amazon]
+    B --> I[Gift Card Item: $25-$500 Variable Card]
+    I --> C[Gift Card: Specific $50 Card Instance]
+```
+
+## Analogy: Car Manufacturing System
+
+To better understand the structure:
+- Brand = Car Manufacturer (Toyota)
+- Gift Card Item = Car Model (Camry with configurations)
+- Gift Card = Specific Car (Individual Camry with VIN)
+
+## System Benefits
+
+This hierarchical structure enables:
+1. Efficient brand management
+2. Flexible card type definitions
+3. Individual card tracking
+4. Multiple rebate structure support
+5. Inventory management at appropriate levels
+6. Support for both fixed and variable value cards
+
+## Common Operations
+
+- Creating new gift card types: Add to `redemption_giftcard_items`
+- Adding new brands: Insert into `redemption_giftcard_brands`
+- Issuing cards: Create entries in `redemption_giftcards`
+- Managing inventory: Update `inventory_remaining` in `redemption_giftcards` 

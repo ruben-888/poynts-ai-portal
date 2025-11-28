@@ -1,0 +1,46 @@
+model cp_transactionlog {
+  id                         Int       @id @default(autoincrement())
+  result                     String?   @default("success") @db.VarChar(25)
+  promo_id                   Int?
+  reward_id                  Int?
+  cpid                       String?   @db.VarChar(50)
+  reward_type                String?   @db.VarChar(20)
+  mode                       String?   @default("live") @db.VarChar(20)
+  fielo_transName            String?   @db.VarChar(45)
+  entity_type                String?   @default("promo") @db.VarChar(45)
+  date                       DateTime? @default(now()) @db.DateTime(0)
+  entid                      Int?
+  memberid                   Int?
+  metadata                   String?   @db.Text
+  poynts                     Int?      @default(0)
+  ip                         String?   @default("::1") @db.VarChar(45)
+  device_info                String?   @db.VarChar(256)
+  provider_id                Int?
+  order_amount               Decimal?  @db.Decimal(13, 2)
+  order_provider_amount      Decimal?  @db.Decimal(13, 2)
+  provider_balance           Decimal?  @db.Decimal(13, 2)
+  provider_balance_customer  Decimal?  @db.Decimal(13, 2)
+  provider_reference_id      String?   @db.VarChar(100)
+  reward_name                String    @default("") @db.VarChar(50)
+  provider_reward_id         String?   @db.VarChar(25)
+  rebate_provider_percentage Decimal?  @db.Decimal(13, 4)
+  rebate_provider_amount     Decimal?  @db.Decimal(13, 4)
+  rebate_base_percentage     Decimal?  @db.Decimal(13, 4)
+  rebate_base_amount         Decimal?  @db.Decimal(13, 4)
+  rebate_customer_percentage Decimal?  @db.Decimal(13, 4)
+  rebate_customer_amount     Decimal?  @db.Decimal(13, 4)
+  rebate_cp_percentage       Decimal?  @db.Decimal(13, 4)
+  rebate_cp_amount           Decimal?  @db.Decimal(13, 4)
+  cp_transaction_reference   String?   @db.VarChar(50)
+  cust_transaction_reference String?   @db.VarChar(100)
+  message                    String?   @db.VarChar(255)
+  customer_request           String?   @db.LongText
+  customer_response          String?   @db.LongText
+  reconciled                 Int?      @default(0) @db.TinyInt
+  notes                      String?   @db.VarChar(1000)
+
+  // Relations
+  member               member?               @relation("MemberTransactions", fields: [memberid], references: [memberid])
+  enterprise           enterprise?           @relation("EnterpriseTransactions", fields: [entid], references: [ent_id])
+  redemption_giftcards redemption_giftcards? @relation("GiftcardTransactions", fields: [reward_id], references: [giftcard_id])
+}

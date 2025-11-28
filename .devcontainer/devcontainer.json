@@ -1,0 +1,25 @@
+{
+    "name": "CP Platform Portal",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "portal",
+    "runServices": [
+        "portal"
+    ],
+    "workspaceFolder": "/code",
+    "shutdownAction": "stopCompose",
+    "remoteUser": "node",
+    "postAttachCommand": "pnpm install",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "editor.formatOnSave": true,
+                "files.insertFinalNewline": true,
+                "files.trimFinalNewlines": true,
+                "[json]": {
+                    "editor.insertSpaces": true,
+                    "editor.tabSize": 2
+                }
+            }
+        }
+    }
+}

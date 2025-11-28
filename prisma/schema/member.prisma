@@ -1,0 +1,139 @@
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model enterprise {
+  ent_id                 Int      @id @default(autoincrement())
+  ent_id_parent          Int?
+  ent_name               String   @db.VarChar(64)
+  ent_desc               String   @db.Text
+  ent_type               String   @db.VarChar(20)
+  ent_startDate          DateTime @default(now()) @db.Timestamp(0)
+  ent_status             String   @default("active") @db.VarChar(20)
+  ent_phone              String?  @db.VarChar(45)
+  ent_address            String?  @db.VarChar(128)
+  ent_city               String?  @db.VarChar(45)
+  ent_state              String?  @db.VarChar(45)
+  ent_zip                String?  @db.VarChar(45)
+  ent_interfaces         String?  @db.VarChar(128)
+  ent_ADT_user           String?  @db.VarChar(45)
+  ent_ADT_pw             String?  @db.VarChar(45)
+  ent_npi                String?  @db.VarChar(45)
+  ent_aid                String?  @db.VarChar(45)
+  ent_demo               Int?     @default(1)
+  ent_cmspmpm            Int?     @default(4260)
+  ent_paid               Int      @default(0)
+  geo_long               Float?
+  geo_lat                Float?
+  profile_logo           String?  @db.VarChar(255)
+  profile_photo          String?  @db.VarChar(255)
+  profile_rating_google  String?  @db.VarChar(255)
+  profile_rating_fb      String?  @db.VarChar(255)
+  profile_rating_yelp    String?  @db.VarChar(255)
+  profile_reviews_google String?  @db.VarChar(255)
+  profile_reviews_fb     String?  @db.VarChar(255)
+  profile_reviews_yelp   String?  @db.VarChar(255)
+  profile_details        String?  @db.Text
+  website_url            String?  @db.VarChar(255)
+
+  // Relations
+  memberRoles  member_role[]       @relation("EnterpriseToMemberRole")
+  transactions cp_transactionlog[] @relation("EnterpriseTransactions")
+  redemption_registry_groups redemption_registry_groups[]
+
+  // Many-to-many relation with members through member_role
+  members member[] @relation("MemberToEnterprise")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model member {
+  memberid          Int       @id @default(autoincrement())
+  password          String    @default("") @db.Char(32)
+  securityQ         String    @db.VarChar(100)
+  securityA         String    @db.VarChar(100)
+  email             String    @db.VarChar(150)
+  mPhone            String    @db.VarChar(20)
+  fbUserId          String    @default("") @db.VarChar(100)
+  photoPath         String    @default("") @db.VarChar(200)
+  name              String    @default("") @db.VarChar(150)
+  memberStatus      String    @default("active") @db.VarChar(100)
+  lastActivity      DateTime  @default(now()) @db.Timestamp(0)
+  gender            String    @db.VarChar(10)
+  dob               DateTime  @db.Date
+  zip               String    @db.VarChar(20)
+  lastViewed        DateTime  @default(dbgenerated("'0000-00-00 00:00:00'")) @db.Timestamp(0)
+  userPwd           Int       @default(0) @db.TinyInt
+  ssn               String    @default("") @db.VarChar(45)
+  lastAdmitDate     DateTime  @db.Date
+  lastDischargeDate DateTime  @db.Date
+  lastAdmitDx       String    @db.Text
+  directEmail       String    @db.VarChar(150)
+  extid_1           String?   @db.VarChar(32)
+  payer             String?   @default("") @db.VarChar(64)
+  payerid           String?   @default("") @db.VarChar(8)
+  rxReminders       Int?      @default(0)
+  tzOffset          Int?      @default(-480)
+  risk              Int?      @default(0)
+  npi               String?   @db.VarChar(32)
+  address           String?   @db.VarChar(128)
+  primaryIns_name   String?   @db.VarChar(128)
+  primaryIns_num    String?   @db.VarChar(45)
+  city              String?   @db.VarChar(45)
+  state             String?   @db.VarChar(45)
+  hPhone            String?   @db.VarChar(20)
+  pref_email        Boolean?  @default(false)
+  pref_sms          Boolean?  @default(false)
+  pref_ios_push     Boolean?  @default(false)
+  pref_android_push Boolean?  @default(false)
+  pref_lang         String?   @default("en") @db.VarChar(4)
+  pref_ivr          Boolean?  @default(false)
+  accountNum        String?   @db.VarChar(45)
+  username          String?   @default("") @db.VarChar(45)
+  fielo_lock        Int?      @default(0) @db.TinyInt
+  failed_attempt    Int?      @default(0)
+  create_date       DateTime? @default(now()) @db.Timestamp(0)
+  update_date       DateTime? @default(now()) @db.Timestamp(0)
+  activation_date   DateTime? @db.DateTime(0)
+  accountStatus     Boolean   @default(true)
+  fileostatus       String?   @db.VarChar(45)
+  fielo_err_msg     String?   @db.VarChar(45)
+  fielostatus       String?   @db.VarChar(45)
+  app_error_msg     String?   @db.TinyText
+  isLive            String?   @db.VarChar(25)
+  mode              String?   @db.VarChar(25)
+
+  // Relations
+  transactions cp_transactionlog[] @relation("MemberTransactions")
+  memberRoles  member_role[]       @relation("MemberToMemberRole")
+
+  // Many-to-many relation with enterprises through member_role
+  enterprises enterprise[] @relation("MemberToEnterprise")
+
+  @@index([email], map: "idx_member_email")
+  @@index([mPhone], map: "idx_member_mPhone")
+  @@index([name], map: "idx_member_name")
+  @@index([accountStatus], map: "index_acct_status")
+}
+
+model member_role {
+  member_roleid Int       @id @default(autoincrement())
+  memberid      Int
+  roleid        Int
+  modDate       DateTime  @default(now()) @db.Timestamp(0)
+  roleStatus    Int?      @default(1)
+  entid         Int       @default(-1)
+  patientid     Int       @default(-1)
+  skill         String?   @default("") @db.VarChar(128)
+  adoptionid    Int
+  token         String?   @db.Char(32)
+  dependent     Int?      @default(0)
+  verify_token  String?   @db.VarChar(256)
+  create_date   DateTime? @default(now()) @db.Timestamp(0)
+  update_date   DateTime? @default(now()) @db.Timestamp(0)
+
+  // Relations
+  member     member     @relation("MemberToMemberRole", fields: [memberid], references: [memberid])
+  enterprise enterprise @relation("EnterpriseToMemberRole", fields: [entid], references: [ent_id])
+
+  @@index([entid], map: "indx_entid_member_role")
+  @@index([memberid], map: "indx_memberid_member_role")
+  @@index([roleStatus], map: "indx_roleStatus_member_role")
+  @@index([roleid], map: "indx_roleid_member_role")
+}

@@ -1,0 +1,122 @@
+model redemption_giftcard_items {
+  item_id                    Int      @id @default(autoincrement()) @db.UnsignedInt
+  brand_id                   Int
+  provider_id                Int?
+  utid                       String?  @db.VarChar(255)
+  rewardName                 String?  @db.VarChar(255)
+  currencyCode               String?  @db.VarChar(255)
+  status                     String?  @db.VarChar(255)
+  reward_status              String?  @default("active") @db.VarChar(50)
+  reward_availability        String?  @default("AVAILABLE") @db.VarChar(50)
+  valueType                  String?  @db.VarChar(255)
+  rewardType                 String?  @db.VarChar(255)
+  isWholeAmountValueRequired String?  @db.VarChar(255)
+  minValue                   Float?
+  maxValue                   Float?
+  createdDate                String?  @db.VarChar(255)
+  lastUpdateDate             String?  @db.VarChar(255)
+  countries_json             String?  @db.Text
+  credentialTypes_json       String?  @db.Text
+  redemptionInstructions     String?  @db.Text
+  rebate_provider_percentage Decimal? @db.Decimal(13, 4)
+  rebate_base_percentage     Decimal? @db.Decimal(13, 4)
+  rebate_customer_percentage Decimal? @db.Decimal(13, 4)
+  rebate_cp_percentage       Decimal? @db.Decimal(13, 4)
+  notes                      String?  @db.MediumText
+
+  // Relationships
+  redemption_giftcard_brands redemption_giftcard_brands @relation(fields: [brand_id], references: [brand_id])
+  providers                  providers?                 @relation(fields: [provider_id], references: [id])
+  redemption_giftcards       redemption_giftcards[]
+
+  @@index([brand_id])
+  @@index([provider_id])
+}
+
+model redemption_giftcards {
+  giftcard_id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  item_id             Int       @default(0)
+  value               Float     @default(0)
+  redem_value         Float     @default(0)
+  inventory_type      String    @default("unlimited") @db.VarChar(50)
+  inventory_remaining Int       @default(0)
+  language            String?   @default("EN") @db.VarChar(20)
+  tags                String?   @db.VarChar(255)
+  cpid                String?   @db.VarChar(100)
+  priority            Int?      @default(1) @db.TinyInt
+  custom_title        String?   @default("") @db.VarChar(200)
+  updated_at          DateTime?
+  created_at          DateTime?
+
+  // Relationships
+  redemption_giftcard_items redemption_giftcard_items @relation(fields: [item_id], references: [item_id])
+  transactions              cp_transactionlog[]       @relation("GiftcardTransactions")
+
+  @@index([item_id])
+}
+
+model redemption_giftcard_log {
+  item_id                    Int       @id @default(autoincrement())
+  log_date                   DateTime? @db.DateTime(0)
+  brand_id                   Int
+  utid                       String?   @db.VarChar(255)
+  rewardName                 String?   @db.VarChar(255)
+  currencyCode               String?   @db.VarChar(255)
+  status                     String?   @db.VarChar(255)
+  reward_status              String?   @default("active") @db.VarChar(50)
+  reward_availability        String?   @default("AVAILABLE") @db.VarChar(50)
+  valueType                  String?   @db.VarChar(255)
+  rewardType                 String?   @db.VarChar(255)
+  isWholeAmountValueRequired String?   @db.VarChar(255)
+  minValue                   Float?
+  maxValue                   Float?
+  createdDate                String?   @db.VarChar(255)
+  lastUpdateDate             String?   @db.VarChar(255)
+  countries_json             String?   @db.MediumText
+  credentialTypes_json       String?   @db.MediumText
+  redemptionInstructions     String?   @db.MediumText
+
+  // Relationships
+  redemption_giftcard_brands redemption_giftcard_brands @relation(fields: [brand_id], references: [brand_id])
+
+  @@index([brand_id])
+}
+
+model redemption_giftcard_brands {
+  brand_id         Int     @id @default(autoincrement()) @db.UnsignedInt
+  brandKey         String  @db.VarChar(255)
+  brandTag         String? @db.VarChar(100)
+  brandName        String? @db.VarChar(255)
+  description      String? @db.Text
+  disclaimer       String? @db.Text
+  shortDescription String? @db.Text
+  status           String? @db.VarChar(255)
+  terms            String? @db.Text
+  imageUrls_json   String? @db.Text
+  createdDate      String? @db.VarChar(255)
+  lastUpdateDate   String? @db.VarChar(255)
+  json             String? @db.Text
+
+  // Relationships
+  redemption_giftcard_items redemption_giftcard_items[]
+  redemption_giftcard_log   redemption_giftcard_log[]
+}
+
+model providers {
+  id                    Int     @id @default(autoincrement())
+  name                  String? @db.VarChar(100)
+  description           String? @db.VarChar(255)
+  code                  String? @db.VarChar(10)
+  enabled               Int?    @db.TinyInt
+  retries               Int?    @default(2) @db.TinyInt
+  retry_delay           Int?    @default(2) @db.TinyInt
+  suspend_on_fail       Int?    @default(1) @db.TinyInt
+  suspend_on_fail_limit Int?    @default(4) @db.TinyInt
+  success_codes         String? @db.VarChar(100)
+  failure_codes         String? @db.VarChar(100)
+  the_code_corrected    String? @db.VarChar(8)
+
+  // Relationships
+  redemption_giftcard_items redemption_giftcard_items[]
+  client_banks              cp_client_bank[]            @relation("ClientBankToProvider")
+}

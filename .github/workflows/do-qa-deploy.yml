@@ -1,0 +1,35 @@
+name: QA Deployment
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "**"
+
+jobs:
+  do-build-push-portal-qa:
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-portal-ar
+      cancel-in-progress: true
+    uses: ./.github/workflows/build-push-ar.yml
+    with:
+      DOCKER_DOCKERFILE: "docker/Dockerfile"
+      DOCKER_IMAGE_TAG: "env-qa"
+      GCP_PROJECT_ID: "platform-common-457117"
+      GCP_AR_REPO_NAME: "platform-repository"
+    secrets:
+      GCP_ACCESS_KEY: ${{ secrets.GCP_ACCESS_KEY }}
+
+  do-update-image-portal-qa:
+    needs:
+      - do-build-push-portal-qa
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-portal-service
+      cancel-in-progress: true
+    uses: ./.github/workflows/update-image-cr.yml
+    with:
+      GCP_PROJECT_ID: "platform-qa-457121"
+      AR_IMAGE_URI: ${{ needs.do-build-push-portal-qa.outputs.IMAGE_URI }}
+    secrets:
+      GCP_ACCESS_KEY: ${{ secrets.GCP_ACCESS_KEY }}
