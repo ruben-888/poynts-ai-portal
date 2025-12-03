@@ -1,0 +1,643 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/@prisma/postgres-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_DATABASE_URL")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model api_keys {
+  id              String               @id @db.VarChar(255)
+  name            String               @db.VarChar(255)
+  key_hash        String               @unique(map: "idx_api_keys_key_hash") @db.VarChar(64)
+  key_preview     String               @db.VarChar(20)
+  organization_fk String               @db.VarChar(255)
+  status          api_key_status_enum? @default(active)
+  permissions     Json?                @default("[]")
+  expires_at      DateTime?            @db.Timestamp(6)
+  last_used_at    DateTime?            @db.Timestamp(6)
+  created_at      DateTime?            @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?            @default(now()) @db.Timestamp(6)
+  organizations   organizations        @relation(fields: [organization_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "api_keys_organization_id_fkey")
+
+  @@index([organization_fk], map: "idx_api_keys_organization")
+  @@index([status], map: "idx_api_keys_status")
+  @@index([organization_fk], map: "idx_api_keys_org")
+}
+
+model campaign_steps {
+  id                      String                    @id @db.VarChar(255)
+  campaign_fk             String                    @db.VarChar(255)
+  name                    String                    @db.VarChar(255)
+  description             String?
+  step_order              Int
+  poynts                  Int                       @default(0)
+  action_type             step_action_type_enum
+  action_config           Json?
+  is_required             Boolean?                  @default(true)
+  created_at              DateTime?                 @default(now()) @db.Timestamp(6)
+  updated_at              DateTime?                 @default(now()) @db.Timestamp(6)
+  campaigns               campaigns                 @relation(fields: [campaign_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "campaign_steps_campaign_id_fkey")
+  member_step_completions member_step_completions[]
+
+  @@index([action_type], map: "idx_campaign_steps_action")
+  @@index([campaign_fk, step_order], map: "idx_campaign_steps_campaign")
+}
+
+model campaigns {
+  id                       String                     @id @db.VarChar(255)
+  organization_fk          String                     @db.VarChar(255)
+  name                     String                     @db.VarChar(255)
+  slug                     String                     @db.VarChar(255)
+  description              String?
+  type                     campaign_type_enum
+  status                   campaign_status_enum?      @default(draft)
+  total_poynts             Int                        @default(0)
+  image_url                String?                    @db.VarChar(500)
+  start_date               DateTime?                  @db.Timestamp(6)
+  end_date                 DateTime?                  @db.Timestamp(6)
+  max_participants         Int?
+  metadata                 Json?
+  created_at               DateTime?                  @default(now()) @db.Timestamp(6)
+  updated_at               DateTime?                  @default(now()) @db.Timestamp(6)
+  program_fk               String?                    @db.VarChar(255)
+  requires_verification    Boolean?                   @default(false)
+  campaign_steps           campaign_steps[]
+  organizations            organizations              @relation(fields: [organization_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "campaigns_organization_id_fkey")
+  programs                 programs?                  @relation(fields: [program_fk], references: [id], onUpdate: NoAction, map: "fk_campaigns_program")
+  member_campaign_progress member_campaign_progress[]
+  poynts_transactions      poynts_transactions[]
+
+  @@unique([organization_fk, slug], map: "campaigns_org_slug_unique")
+  @@index([start_date, end_date], map: "idx_campaigns_dates")
+  @@index([organization_fk], map: "idx_campaigns_org")
+  @@index([status], map: "idx_campaigns_status")
+  @@index([type], map: "idx_campaigns_type")
+  @@index([program_fk], map: "idx_campaigns_program")
+}
+
+model catalog_rewards {
+  id              String       @db.VarChar(255)
+  catalog_fk      String       @db.VarChar(255)
+  reward_fk       String       @db.VarChar(255)
+  poynts_override Int?
+  status_override status_enum?
+  display_order   Int?         @default(0)
+  start_date      DateTime?    @db.Timestamp(6)
+  end_date        DateTime?    @db.Timestamp(6)
+  created_at      DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?    @default(now()) @db.Timestamp(6)
+  catalogs        catalogs     @relation(fields: [catalog_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "catalog_rewards_catalog_id_fkey")
+  rewards         rewards      @relation(fields: [reward_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "catalog_rewards_reward_id_fkey")
+
+  @@id([catalog_fk, reward_fk])
+  @@unique([catalog_fk, reward_fk], map: "catalog_rewards_catalog_reward_unique")
+  @@index([catalog_fk], map: "idx_catalog_rewards_catalog")
+  @@index([reward_fk], map: "idx_catalog_rewards_reward")
+  @@index([status_override], map: "idx_catalog_rewards_status")
+}
+
+model catalogs {
+  id              String            @id @db.VarChar(255)
+  name            String            @db.VarChar(255)
+  description     String?
+  organization_fk String            @db.VarChar(255)
+  created_at      DateTime?         @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?         @default(now()) @db.Timestamp(6)
+  catalog_rewards catalog_rewards[]
+  organizations   organizations     @relation(fields: [organization_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "catalogs_organization_id_fkey")
+  orders          orders[]
+
+  @@index([organization_fk], map: "idx_catalogs_org")
+}
+
+model member_campaign_progress {
+  id                      String                    @id @db.VarChar(255)
+  member_fk               String                    @db.VarChar(255)
+  campaign_fk             String                    @db.VarChar(255)
+  status                  progress_status_enum?     @default(enrolled)
+  poynts_earned           Int?                      @default(0)
+  completed_steps         Int?                      @default(0)
+  total_steps             Int
+  enrolled_at             DateTime?                 @default(now()) @db.Timestamp(6)
+  completed_at            DateTime?                 @db.Timestamp(6)
+  last_activity_at        DateTime?                 @default(now()) @db.Timestamp(6)
+  program_id              String?                   @db.VarChar(255)
+  verified_at             DateTime?                 @db.Timestamp(6)
+  verified_by             String?                   @db.VarChar(255)
+  created_at              DateTime                  @default(now()) @db.Timestamp(6)
+  updated_at              DateTime                  @default(now()) @db.Timestamp(6)
+  programs                programs?                 @relation(fields: [program_id], references: [id], onUpdate: NoAction, map: "fk_member_progress_program")
+  campaigns               campaigns                 @relation(fields: [campaign_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "member_campaign_progress_campaign_id_fkey")
+  members                 members                   @relation(fields: [member_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "member_campaign_progress_member_id_fkey")
+  member_step_completions member_step_completions[]
+
+  @@unique([member_fk, campaign_fk], map: "member_campaign_progress_unique")
+  @@index([campaign_fk], map: "idx_member_progress_campaign")
+  @@index([member_fk], map: "idx_member_progress_member")
+  @@index([status], map: "idx_member_progress_status")
+  @@index([program_id], map: "idx_member_progress_program")
+}
+
+model member_step_completions {
+  id                       String                   @id @db.VarChar(255)
+  member_fk                String                   @db.VarChar(255)
+  campaign_step_fk         String                   @db.VarChar(255)
+  progress_fk              String                   @db.VarChar(255)
+  poynts_awarded           Int
+  completion_data          Json?
+  verified_at              DateTime?                @db.Timestamp(6)
+  verified_by              String?                  @db.VarChar(255)
+  completed_at             DateTime?                @default(now()) @db.Timestamp(6)
+  campaign_steps           campaign_steps           @relation(fields: [campaign_step_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "member_step_completions_campaign_step_id_fkey")
+  members                  members                  @relation(fields: [member_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "member_step_completions_member_id_fkey")
+  member_campaign_progress member_campaign_progress @relation(fields: [progress_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "member_step_completions_progress_id_fkey")
+
+  @@index([completed_at(sort: Desc)], map: "idx_step_completions_date")
+  @@index([member_fk], map: "idx_step_completions_member")
+  @@index([progress_fk], map: "idx_step_completions_progress")
+  @@index([campaign_step_fk], map: "idx_step_completions_step")
+}
+
+model members {
+  id                       String                     @id @db.VarChar(255)
+  first_name               String                     @db.VarChar(255)
+  last_name                String                     @db.VarChar(255)
+  email                    String                     @db.VarChar(255)
+  phone                    String?                    @db.VarChar(50)
+  date_of_birth            DateTime?                  @db.Date
+  organization_fk          String                     @db.VarChar(255)
+  external_id              String                     @db.VarChar(255)
+  status                   status_enum?               @default(active)
+  created_at               DateTime?                  @default(now()) @db.Timestamp(6)
+  updated_at               DateTime?                  @default(now()) @db.Timestamp(6)
+  user_fk                  String?                    @db.VarChar(255)
+  member_campaign_progress member_campaign_progress[]
+  member_step_completions  member_step_completions[]
+  member_tier_history      member_tier_history[]
+  member_tiers             member_tiers[]
+  organizations            organizations              @relation(fields: [organization_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "members_organization_id_fkey")
+  orders                   orders[]
+  poynts_transactions      poynts_transactions[]
+
+  @@unique([organization_fk, email], map: "members_org_email_unique")
+  @@unique([organization_fk, external_id], map: "members_org_external_id_unique")
+  @@unique([organization_fk, external_id], map: "members_org_external_unique")
+  @@index([external_id], map: "idx_members_external_id")
+  @@index([organization_fk], map: "idx_members_org")
+  @@index([status], map: "idx_members_status")
+  @@index([user_fk], map: "idx_members_user")
+}
+
+model orders {
+  id              String             @id @db.VarChar(255)
+  external_id     String             @unique @db.VarChar(255)
+  catalog_fk      String             @db.VarChar(255)
+  status          order_status_enum? @default(pending)
+  poynts          Int?
+  value           Decimal?           @db.Decimal(10, 2)
+  currency        String?            @db.VarChar(10)
+  notes           String?
+  member_fk       String             @db.VarChar(255)
+  organization_fk String             @db.VarChar(255)
+  reward          Json?
+  created_at      DateTime?          @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?          @default(now()) @db.Timestamp(6)
+  catalogs        catalogs           @relation(fields: [catalog_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orders_catalog_id_fkey")
+  members         members            @relation(fields: [member_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orders_member_id_fkey")
+  organizations   organizations      @relation(fields: [organization_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "orders_organization_id_fkey")
+  recipients      recipients[]
+
+  @@index([catalog_fk], map: "idx_orders_catalog")
+  @@index([created_at(sort: Desc)], map: "idx_orders_created")
+  @@index([member_fk], map: "idx_orders_member")
+  @@index([member_fk, created_at(sort: Desc)], map: "idx_orders_member_created")
+  @@index([organization_fk], map: "idx_orders_org")
+  @@index([organization_fk, created_at(sort: Desc)], map: "idx_orders_org_created")
+  @@index([status], map: "idx_orders_status")
+}
+
+model organizations {
+  id                   String          @id @db.VarChar(255)
+  name                 String          @db.VarChar(255)
+  description          String?
+  status               status_enum?    @default(active)
+  parent_id            String?         @db.VarChar(255)
+  created_at           DateTime?       @default(now()) @db.Timestamp(6)
+  updated_at           DateTime?       @default(now()) @db.Timestamp(6)
+  auth_provider_org_id String?         @unique(map: "organizations_auth_provider_org_id_unique") @db.VarChar(255)
+  api_keys             api_keys[]
+  campaigns            campaigns[]
+  catalogs             catalogs[]
+  members              members[]
+  orders               orders[]
+  organizations        organizations?  @relation("organizationsToorganizations", fields: [parent_id], references: [id], onUpdate: NoAction)
+  other_organizations  organizations[] @relation("organizationsToorganizations")
+  programs             programs[]
+  users                users[]
+
+  @@index([auth_provider_org_id], map: "idx_organizations_auth_provider")
+}
+
+model poynts_transactions {
+  id             String                @id @db.VarChar(255)
+  member_fk      String                @db.VarChar(255)
+  type           transaction_type_enum
+  amount         Int
+  balance_after  Int
+  description    String                @db.VarChar(500)
+  reference_type String?               @db.VarChar(100)
+  reference_id   String?               @db.VarChar(255)
+  created_at     DateTime?             @default(now()) @db.Timestamp(6)
+  campaign_fk    String?               @db.VarChar(255)
+  program_fk     String?               @db.VarChar(255)
+  campaigns      campaigns?            @relation(fields: [campaign_fk], references: [id], onUpdate: NoAction, map: "fk_poynts_tx_campaign")
+  programs       programs?             @relation(fields: [program_fk], references: [id], onUpdate: NoAction, map: "fk_poynts_tx_program")
+  members        members               @relation(fields: [member_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "poynts_transactions_member_id_fkey")
+
+  @@index([member_fk, created_at(sort: Desc)], map: "idx_poynts_tx_member")
+  @@index([reference_type, reference_id], map: "idx_poynts_tx_reference")
+  @@index([type], map: "idx_poynts_tx_type")
+  @@index([campaign_fk], map: "idx_poynts_tx_campaign")
+  @@index([member_fk, campaign_fk], map: "idx_poynts_tx_member_campaign")
+  @@index([member_fk, program_fk], map: "idx_poynts_tx_member_program")
+  @@index([program_fk], map: "idx_poynts_tx_program")
+}
+
+model recipients {
+  id              String                @id @db.VarChar(255)
+  order_fk        String                @db.VarChar(255)
+  email           String?               @db.VarChar(255)
+  phone           String?               @db.VarChar(50)
+  first_name      String?               @db.VarChar(255)
+  last_name       String?               @db.VarChar(255)
+  delivery_method delivery_method_enum? @default(email)
+  delivery_status delivery_status_enum? @default(pending)
+  delivered_at    DateTime?             @db.Timestamp(6)
+  metadata        Json?
+  created_at      DateTime?             @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?             @default(now()) @db.Timestamp(6)
+  orders          orders                @relation(fields: [order_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "recipients_order_id_fkey")
+
+  @@index([email], map: "idx_recipients_email")
+  @@index([order_fk], map: "idx_recipients_order")
+  @@index([delivery_status], map: "idx_recipients_status")
+}
+
+model rewards {
+  id                      String                  @id @db.VarChar(255)
+  type                    reward_type_enum?
+  brand_fk                String?                 @db.VarChar(255)
+  name                    String?                 @db.VarChar(255)
+  description             String?
+  status                  status_enum?            @default(active)
+  long_description        String?
+  value                   Decimal?                @db.Decimal(10, 2)
+  currency                String?                 @db.VarChar(10)
+  poynts                  Int?
+  countries               Json?
+  language                String?                 @db.VarChar(10)
+  image                   String?                 @db.VarChar(500)
+  redemption_instructions String?
+  terms                   String?
+  tags                    Json?
+  inventory               Json?
+  external_id             String?                 @db.VarChar(255)
+  created_at              DateTime?               @default(now()) @db.Timestamp(6)
+  updated_at              DateTime?               @default(now()) @db.Timestamp(6)
+  source_fk               String?                 @db.VarChar(255)
+  catalog_rewards         catalog_rewards[]
+  rewards_brands          rewards_brands?         @relation(fields: [brand_fk], references: [id], onUpdate: NoAction, map: "rewards_brand_id_fkey")
+  rewards_sources         rewards_sources?        @relation(fields: [source_fk], references: [id], onUpdate: NoAction, map: "rewards_source_id_fkey")
+  rewards_sources_items   rewards_sources_items[]
+
+  @@unique([source_fk, external_id], map: "rewards_source_external_unique")
+  @@index([brand_fk], map: "idx_rewards_brand")
+  @@index([source_fk], map: "idx_rewards_source")
+  @@index([status], map: "idx_rewards_status")
+  @@index([type], map: "idx_rewards_type")
+}
+
+model rewards_brands {
+  id         String    @id(map: "brands_pkey") @db.VarChar(255)
+  name       String    @unique(map: "rewards_brands_name_unique") @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  rewards    rewards[]
+}
+
+model rewards_sources {
+  id                    String                  @id @db.VarChar(255)
+  name                  String                  @unique(map: "rewards_sources_name_unique") @db.VarChar(255)
+  description           String?
+  api_base_url          String?                 @db.VarChar(500)
+  api_credentials       Json?
+  status                status_enum?            @default(active)
+  metadata              Json?
+  created_at            DateTime?               @default(now()) @db.Timestamp(6)
+  updated_at            DateTime?               @default(now()) @db.Timestamp(6)
+  rewards               rewards[]
+  rewards_sources_items rewards_sources_items[]
+
+  @@index([status], map: "idx_rewards_sources_status")
+}
+
+model rewards_sources_items {
+  id                String          @id @db.VarChar(255)
+  source_fk         String          @db.VarChar(255)
+  source_identifier String          @db.VarChar(255)
+  reward_fk         String?         @db.VarChar(255)
+  priority          Int?            @default(0)
+  raw_data          Json?
+  status            status_enum?    @default(active)
+  last_synced_at    DateTime?       @db.Timestamp(6)
+  created_at        DateTime?       @default(now()) @db.Timestamp(6)
+  updated_at        DateTime?       @default(now()) @db.Timestamp(6)
+  rewards           rewards?        @relation(fields: [reward_fk], references: [id], onUpdate: NoAction, map: "rewards_sources_items_reward_id_fkey")
+  rewards_sources   rewards_sources @relation(fields: [source_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "rewards_sources_items_source_id_fkey")
+
+  @@unique([source_fk, source_identifier], map: "rewards_sources_items_source_identifier_unique")
+  @@index([reward_fk], map: "idx_rewards_sources_items_reward")
+  @@index([source_fk], map: "idx_rewards_sources_items_source")
+  @@index([status], map: "idx_rewards_sources_items_status")
+}
+
+model system_activity {
+  id          String           @id @db.VarChar(255)
+  entity_type String           @db.VarChar(100)
+  entity_id   String?          @db.VarChar(255)
+  action      String           @db.VarChar(100)
+  actor_type  actor_type_enum?
+  actor_id    String?          @db.VarChar(255)
+  changes     Json?
+  metadata    Json?
+  ip_address  String?          @db.VarChar(45)
+  user_agent  String?
+  created_at  DateTime?        @default(now()) @db.Timestamp(6)
+
+  @@index([action], map: "idx_system_activity_action")
+  @@index([actor_type, actor_id], map: "idx_system_activity_actor")
+  @@index([created_at(sort: Desc)], map: "idx_system_activity_created")
+  @@index([entity_type, entity_id], map: "idx_system_activity_entity")
+}
+
+model users {
+  id                    String          @id @db.VarChar(255)
+  auth_provider_user_id String          @unique(map: "users_auth_provider_user_id_unique") @db.VarChar(255)
+  organization_fk       String          @db.VarChar(255)
+  email                 String          @db.VarChar(255)
+  first_name            String?         @db.VarChar(255)
+  last_name             String?         @db.VarChar(255)
+  role                  user_role_enum? @default(staff)
+  status                status_enum?    @default(active)
+  created_at            DateTime?       @default(now()) @db.Timestamp(6)
+  updated_at            DateTime?       @default(now()) @db.Timestamp(6)
+  organizations         organizations   @relation(fields: [organization_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "users_organization_id_fkey")
+
+  @@unique([organization_fk, email], map: "users_org_email_unique")
+  @@index([auth_provider_user_id], map: "idx_users_auth_provider")
+  @@index([email], map: "idx_users_email")
+  @@index([organization_fk], map: "idx_users_org")
+  @@index([role], map: "idx_users_role")
+  @@index([status], map: "idx_users_status")
+}
+
+model member_tier_history {
+  id                                                                      String                @id @db.VarChar(255)
+  member_fk                                                               String                @db.VarChar(255)
+  program_fk                                                              String                @db.VarChar(255)
+  previous_tier_fk                                                        String?               @db.VarChar(255)
+  new_tier_fk                                                             String                @db.VarChar(255)
+  change_type                                                             tier_change_type_enum
+  change_reason                                                           String?
+  changed_by                                                              String?               @db.VarChar(255)
+  created_at                                                              DateTime?             @default(now()) @db.Timestamp(6)
+  effective_date                                                          DateTime              @default(now()) @db.Timestamp(6)
+  members                                                                 members               @relation(fields: [member_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "member_tier_history_member_id_fkey")
+  tier_definitions_member_tier_history_new_tier_fkTotier_definitions      tier_definitions      @relation("member_tier_history_new_tier_fkTotier_definitions", fields: [new_tier_fk], references: [id], onUpdate: NoAction, map: "member_tier_history_new_tier_id_fkey")
+  tier_definitions_member_tier_history_previous_tier_fkTotier_definitions tier_definitions?     @relation("member_tier_history_previous_tier_fkTotier_definitions", fields: [previous_tier_fk], references: [id], onUpdate: NoAction, map: "member_tier_history_previous_tier_id_fkey")
+  programs                                                                programs              @relation(fields: [program_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "member_tier_history_program_id_fkey")
+
+  @@index([member_fk], map: "idx_member_tier_history_member")
+  @@index([program_fk], map: "idx_member_tier_history_program")
+  @@index([member_fk, effective_date], map: "idx_member_tier_history_effective")
+}
+
+model member_tiers {
+  id                     String                    @id @db.VarChar(255)
+  member_fk              String                    @db.VarChar(255)
+  program_fk             String                    @db.VarChar(255)
+  tier_definition_fk     String                    @db.VarChar(255)
+  assigned_at            DateTime                  @default(now()) @db.Timestamp(6)
+  assignment_type        tier_assignment_type_enum
+  assigned_by            String?                   @db.VarChar(255)
+  expires_at             DateTime?                 @db.Timestamp(6)
+  qualification_snapshot Json?
+  notes                  String?
+  created_at             DateTime?                 @default(now()) @db.Timestamp(6)
+  updated_at             DateTime?                 @default(now()) @db.Timestamp(6)
+  members                members                   @relation(fields: [member_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "member_tiers_member_id_fkey")
+  programs               programs                  @relation(fields: [program_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "member_tiers_program_id_fkey")
+  tier_definitions       tier_definitions          @relation(fields: [tier_definition_fk], references: [id], onUpdate: NoAction, map: "member_tiers_tier_definition_id_fkey")
+
+  @@unique([member_fk, program_fk], map: "member_tiers_member_program_unique")
+  @@index([member_fk], map: "idx_member_tiers_member")
+  @@index([program_fk], map: "idx_member_tiers_program")
+  @@index([tier_definition_fk], map: "idx_member_tiers_tier")
+}
+
+model programs {
+  id                       String                     @id @db.VarChar(255)
+  organization_fk          String                     @db.VarChar(255)
+  name                     String                     @db.VarChar(255)
+  slug                     String                     @db.VarChar(255)
+  description              String?
+  status                   program_status_enum?       @default(active)
+  start_date               DateTime?                  @db.Timestamp(6)
+  end_date                 DateTime?                  @db.Timestamp(6)
+  eligibility_rules        Json?
+  earning_modifiers        Json?
+  poynt_caps               Json?
+  metadata                 Json?
+  created_at               DateTime?                  @default(now()) @db.Timestamp(6)
+  updated_at               DateTime?                  @default(now()) @db.Timestamp(6)
+  campaigns                campaigns[]
+  member_campaign_progress member_campaign_progress[]
+  member_tier_history      member_tier_history[]
+  member_tiers             member_tiers[]
+  poynts_transactions      poynts_transactions[]
+  organizations            organizations              @relation(fields: [organization_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "programs_organization_id_fkey")
+  tier_definitions         tier_definitions[]
+
+  @@unique([organization_fk, slug], map: "programs_org_slug_unique")
+  @@index([start_date, end_date], map: "idx_programs_dates")
+  @@index([organization_fk], map: "idx_programs_org")
+  @@index([status], map: "idx_programs_status")
+}
+
+model tier_definitions {
+  id                                                                         String                @id @db.VarChar(255)
+  program_fk                                                                 String                @db.VarChar(255)
+  name                                                                       String                @db.VarChar(255)
+  slug                                                                       String                @db.VarChar(50)
+  level                                                                      Int
+  description                                                                String?
+  qualification_rules                                                        Json
+  benefits                                                                   Json
+  color                                                                      String?               @db.VarChar(20)
+  icon_url                                                                   String?               @db.VarChar(500)
+  created_at                                                                 DateTime?             @default(now()) @db.Timestamp(6)
+  updated_at                                                                 DateTime?             @default(now()) @db.Timestamp(6)
+  member_tier_history_member_tier_history_new_tier_fkTotier_definitions      member_tier_history[] @relation("member_tier_history_new_tier_fkTotier_definitions")
+  member_tier_history_member_tier_history_previous_tier_fkTotier_definitions member_tier_history[] @relation("member_tier_history_previous_tier_fkTotier_definitions")
+  member_tiers                                                               member_tiers[]
+  programs                                                                   programs              @relation(fields: [program_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "tier_definitions_program_id_fkey")
+
+  @@unique([program_fk, level], map: "tier_definitions_program_level_unique")
+  @@unique([program_fk, slug], map: "tier_definitions_program_slug_unique")
+  @@index([program_fk, level], map: "idx_tier_definitions_level")
+  @@index([program_fk], map: "idx_tier_definitions_program")
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum actor_type_enum {
+  user
+  system
+  api
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum api_key_status_enum {
+  active
+  inactive
+  revoked
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum campaign_status_enum {
+  draft
+  scheduled
+  active
+  paused
+  completed
+  archived
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum campaign_type_enum {
+  acquisition
+  engagement
+  adherence
+  aspiration
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum delivery_method_enum {
+  email
+  sms
+  both
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum delivery_status_enum {
+  pending
+  sent
+  delivered
+  failed
+}
+
+enum order_mode_enum {
+  standard
+  express
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum order_status_enum {
+  pending
+  processing
+  completed
+  cancelled
+  failed
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum program_status_enum {
+  active
+  inactive
+  archived
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum progress_status_enum {
+  enrolled
+  in_progress
+  completed
+  expired
+  withdrawn
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum reward_type_enum {
+  gift_card
+  offer
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum status_enum {
+  active
+  inactive
+  pending
+  suspended
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum step_action_type_enum {
+  manual_verify
+  form_submit
+  link_click
+  video_watch
+  quiz_complete
+  checkin
+  purchase
+  referral
+  social_share
+  file_upload
+  custom_event
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum tier_assignment_type_enum {
+  automatic
+  manual
+  promotion
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum tier_change_type_enum {
+  initial
+  upgrade
+  downgrade
+  manual
+  expired
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum transaction_type_enum {
+  earn_campaign
+  earn_referral
+  earn_bonus
+  earn_adjustment
+  earn_tier_bonus
+  redeem
+  debit_adjustment
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum user_role_enum {
+  admin
+  staff
+  viewer
+}

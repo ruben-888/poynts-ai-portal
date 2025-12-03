@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useGateValue } from "@statsig/react-bindings";
+import { useGateValue } from "@/lib/hooks/use-feature-flags";
 import { RewardDetail } from "../../manage-reward";
 import { GiftCardSource } from "../../types/gift-card-source";
 

@@ -46,7 +46,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
-import { useGateValue } from "@statsig/react-bindings";
+import { useGateValue } from "@/lib/hooks/use-feature-flags";
 
 // Import the new sub-components
 import {

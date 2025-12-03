@@ -1,8 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +11,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { MainNav } from "./main-nav";
-import TeamSwitcher from "./team-switcher";
+import { OrganizationSwitcher } from "./organization-switcher";
 
 export function MobileNav() {
   const [open, setOpen] = React.useState(false);
@@ -29,7 +27,7 @@ export function MobileNav() {
       <SheetContent side="left" className="w-80">
         <SheetHeader>
           <SheetTitle>
-            <TeamSwitcher />
+            <OrganizationSwitcher />
           </SheetTitle>
         </SheetHeader>
         <div className="mt-6 pl-6">

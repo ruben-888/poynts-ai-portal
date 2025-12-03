@@ -11,45 +11,20 @@ const inter = Inter({
 import { cn } from "@/lib/utils";
 import TanstackProvider from "@/components/context/tanstack-provider";
 import { ThemeProvider } from "@/components/context/theme-provider";
-import CPStatsigProvider from "@/components/context/cp-statsig-provider";
-import Script from "next/script";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 
 import DatadogInitializer from "@/components/tracking/datadog-init";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 
-// Import the statsig server utilities
-import {
-  createStatsigUser,
-  getStatsigBootstrapValues,
-} from "@/lib/statsig-server";
-
 export const metadata: Metadata = {
-  title: "Carepoynt Portal",
-  description: "Carepoynt Portal",
+  title: "Poynts AI Portal",
+  description: "Poynts AI Portal",
 };
 
 interface RootLayoutProps {
   children: React.ReactNode;
 }
-
-// Map environment values to Statsig expected values
-const mapEnvironmentToStatsig = (env: string | undefined): string => {
-  if (!env) return "development";
-
-  switch (env.toUpperCase()) {
-    case "DEV":
-      return "development";
-    case "QA":
-    case "SANDBOX-WELL":
-      return "staging";
-    case "PROD":
-      return "production";
-    default:
-      return "development";
-  }
-};
 
 export interface AuthUserSessionClaims {
   userId: string;
@@ -66,29 +41,7 @@ export default async function RootLayout({
   const userEmail = sessionClaims?.primaryEmail as string | undefined;
   const userFullName = sessionClaims?.fullName as string | undefined;
 
-  // Get Statsig bootstrap values if user is authenticated
-  // let statsigBootstrapValues = null;
-  if (userId && userEmail && userFullName) {
-    try {
-      const statsigUser = await createStatsigUser(
-        userId,
-        userEmail,
-        userFullName,
-        sessionClaims,
-        { extractFromRequest: true }
-      );
-
-      // statsigBootstrapValues = await getStatsigBootstrapValues(statsigUser);
-      // console.log("Statsig bootstrap values:", statsigBootstrapValues);
-    } catch (error) {
-      console.error("Error getting Statsig bootstrap values:", error);
-    }
-  }
-
   const ddEnvironment = process.env.DATADOG_ENVIRONMENT || "well_local";
-  const mappedStatsigEnvironment = mapEnvironmentToStatsig(
-    process.env.ENVIRONMENT
-  );
 
   // Create user session data for Datadog if the user is authenticated
   const userSessionData =
@@ -176,25 +129,16 @@ export default async function RootLayout({
               },
             }}
           >
-            <CPStatsigProvider
-              userId={userId || undefined}
-              userEmail={userEmail}
-              userFullName={userFullName}
-              environment={mappedStatsigEnvironment}
-              sessionClaims={sessionClaims}
-              // bootstrapValues={statsigBootstrapValues}
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="light"
+              enableSystem
+              disableTransitionOnChange
             >
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="light"
-                enableSystem
-                disableTransitionOnChange
-              >
-                <TooltipProvider>
-                  <TanstackProvider>{children}</TanstackProvider>
-                </TooltipProvider>
-              </ThemeProvider>
-            </CPStatsigProvider>
+              <TooltipProvider>
+                <TanstackProvider>{children}</TanstackProvider>
+              </TooltipProvider>
+            </ThemeProvider>
           </ClerkProvider>
           <Toaster richColors closeButton position="top-right" />
         </div>

@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Client } from "./schema";
 import { ClientActions } from "./client-actions";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
-import { useGateValue } from "@statsig/react-bindings";
+import { useGateValue } from "@/lib/hooks/use-feature-flags";
 import { useAuth } from "@clerk/nextjs";
 
 // TODO: Replace with actual Clerk role check

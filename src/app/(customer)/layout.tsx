@@ -1,18 +1,9 @@
 import * as React from "react";
 import { MainNav } from "./components/main-nav";
-import TeamSwitcher from "./components/team-switcher";
+import { OrganizationSwitcher } from "./components/organization-switcher";
 import { UserNav } from "./components/user-nav";
 import { MobileNav } from "./components/mobile-nav";
-import { auth } from "@clerk/nextjs/server";
 import { TenantProvider } from "@/components/context/tenant-provider";
-
-// TODO: Multi-tenant UI activation
-// When ready to enable multi-org tenant switching:
-// 1. Replace <TeamSwitcher /> with <CustomOrganizationSwitcher />
-//    import { CustomOrganizationSwitcher } from "@/components/ui/organization-switcher"
-// 2. This will enable users to switch between their authorized Clerk organizations
-// 3. Update TenantContext when org is switched
-// 4. All API endpoints will automatically use the correct org via useTenant() hook
 
 export default async function SecureLayout({
   children,
@@ -32,7 +23,7 @@ export default async function SecureLayout({
 
             {/* Desktop Navigation - hide on small screens */}
             <div className="hidden md:flex w-full">
-              <TeamSwitcher />
+              <OrganizationSwitcher />
               <MainNav className="mx-6" />
               <div className="ml-auto flex items-center space-x-4">
                 <UserNav />

@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { RemoveRewardDialog } from "./remove-reward-dialog";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@clerk/nextjs";
-import { useGateValue } from "@statsig/react-bindings";
+import { useGateValue } from "@/lib/hooks/use-feature-flags";
 import { EnableRewardsButton } from "./giftcards/enable-rewards/enable-rewards-dialog";
 import { ManageOffer, OfferDetail } from "./manage-offer";
 

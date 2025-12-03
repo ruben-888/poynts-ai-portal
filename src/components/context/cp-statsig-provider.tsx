@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   StatsigProvider,
   StatsigUser,
-  useClientAsyncInit,
 } from "@statsig/react-bindings";
+import { StatsigClient } from "@statsig/js-client";
 import { StatsigAutoCapturePlugin } from "@statsig/web-analytics";
 import { StatsigSessionReplayPlugin } from "@statsig/session-replay";
 import { JwtPayload } from "@clerk/types";
@@ -18,10 +18,17 @@ interface CPStatsigProviderProps {
   userFullName?: string;
   sessionClaims?: JwtPayload | null;
   bootstrapValues?: Record<string, any>;
-  // Add any other user properties you want to pass to Statsig
 }
 
-// TODO: We should just probably pass the full Clerk session claims object
+// Create plugins once at module level to avoid recreating on each render
+const statsigPlugins = [
+  new StatsigAutoCapturePlugin(),
+  new StatsigSessionReplayPlugin(),
+];
+
+// Singleton client to avoid recreation
+let statsigClientInstance: StatsigClient | null = null;
+
 export default function CPStatsigProvider({
   children,
   userId = "a-user",
@@ -29,45 +36,56 @@ export default function CPStatsigProvider({
   environment = "development",
   userFullName = "Test User",
   sessionClaims,
-  // bootstrapValues,
 }: CPStatsigProviderProps) {
-  // custom: {
-  //   // You can add additional user info here if needed
-  // },
+  const [isReady, setIsReady] = useState(false);
 
-  const statsigUser: StatsigUser = {
-    userID: userId,
-    email: userEmail || undefined,
-    appVersion: "1.0.0",
-    custom: {
-      fullName: userFullName,
-      orgSlug: sessionClaims?.org_slug,
-      orgRole: sessionClaims?.org_role,
-    },
-  };
-
-  // console.log("statsigUser in Provider", statsigUser);
-
-  // console.log("sessionClaims in Provider", sessionClaims);
-
-  const { client } = useClientAsyncInit(
-    "client-hlb55FAYIabzPxisg7peYhbXK8vy1pIr9sjJNlDBVQq",
-    statsigUser,
-    {
-      environment: {
-        tier: environment,
+  // Memoize statsigUser to prevent unnecessary re-initialization
+  const statsigUser: StatsigUser = useMemo(
+    () => ({
+      userID: userId,
+      email: userEmail || undefined,
+      appVersion: "1.0.0",
+      custom: {
+        fullName: userFullName,
+        orgSlug: sessionClaims?.org_slug,
+        orgRole: sessionClaims?.org_role,
       },
-      plugins: [
-        new StatsigAutoCapturePlugin(),
-        new StatsigSessionReplayPlugin(),
-      ],
-      // Bootstrap with server-side values if provided
-      // ...(bootstrapValues && { initializeValues: bootstrapValues }),
-    }
+    }),
+    [userId, userEmail, userFullName, sessionClaims?.org_slug, sessionClaims?.org_role]
   );
 
+  // Initialize client once
+  useEffect(() => {
+    if (!statsigClientInstance) {
+      statsigClientInstance = new StatsigClient(
+        "client-hlb55FAYIabzPxisg7peYhbXK8vy1pIr9sjJNlDBVQq",
+        statsigUser,
+        {
+          environment: {
+            tier: environment,
+          },
+          plugins: statsigPlugins,
+        }
+      );
+
+      statsigClientInstance.initializeAsync().then(() => {
+        setIsReady(true);
+      });
+    } else {
+      // Client already exists, just update user if needed
+      statsigClientInstance.updateUserAsync(statsigUser).then(() => {
+        setIsReady(true);
+      });
+    }
+  }, [statsigUser, environment]);
+
+  // Show loading state while initializing
+  if (!isReady || !statsigClientInstance) {
+    return <div className="min-h-screen" />;
+  }
+
   return (
-    <StatsigProvider client={client} loadingComponent={<div>Loading...</div>}>
+    <StatsigProvider client={statsigClientInstance}>
       {children}
     </StatsigProvider>
   );

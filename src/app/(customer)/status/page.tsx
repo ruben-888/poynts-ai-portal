@@ -17,7 +17,7 @@ export default function StatusPage() {
             frameBorder="0"
             scrolling="no"
             style={{ border: "none" }}
-            title="Carepoynt System Status"
+            title="Poynts AI Portal System Status"
           />
         </div>
       </div>

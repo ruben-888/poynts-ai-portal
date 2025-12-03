@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 
 const isPublicRoute = createRouteMatcher(["/", "/login(.*)", "/verify"]);
 
+const isPublicApiRoute = createRouteMatcher(["/api/organizations/sync"]);
+
 const isCustomerRoute = createRouteMatcher(["/(customer)/(.*)"]);
 
 const isCPAdminRoute = createRouteMatcher(["/admin(.*)"]);
@@ -20,9 +22,16 @@ const allowedOrgSlugs = [
   "carepoynt",
   "carepoynt-qa",
   "wellco",
+  "poynts-ai-1764352265",
+  "angelai-1164371476",
 ];
 
 export default clerkMiddleware(async (auth, req) => {
+  // Allow public API routes without auth
+  if (isPublicApiRoute(req)) {
+    return;
+  }
+
   // Handle API routes differently
   if (isApiRoute(req)) {
     try {

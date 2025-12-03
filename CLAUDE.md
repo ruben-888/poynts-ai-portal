@@ -24,7 +24,7 @@ prisma generate     # Generate Prisma client (runs on postinstall)
 
 ## Architecture Overview
 
-**Carepoynt Portal** - A Next.js 15 rewards/loyalty platform with dual interfaces:
+**Poynts AI Portal** - A Next.js 15 rewards/loyalty platform with dual interfaces:
 
 ### Application Structure
 - **Customer Interface** (`/(customer)`): Multi-tenant client management at root paths

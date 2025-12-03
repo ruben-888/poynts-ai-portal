@@ -19,6 +19,7 @@ import {
   Loader2,
   Megaphone,
   Calendar,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -30,7 +31,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useClerk, useAuth } from "@clerk/nextjs";
-import { useGateValue } from "@statsig/react-bindings";
+import { useGateValue } from "@/lib/hooks/use-feature-flags";
 
 interface MainNavProps extends React.HTMLAttributes<HTMLElement> {
   showIcons?: boolean;
@@ -110,31 +111,112 @@ export function MainNav({
         {showIcons && <LayoutDashboard className="h-5 w-5" />}
         Dashboard
       </Link>
+      <Link
+        href="/programs"
+        onClick={onNavigate}
+        className={cn(
+          baseLinkClasses,
+          pathname === "/programs" || pathname.startsWith("/programs/")
+            ? "text-primary"
+            : "text-muted-foreground"
+        )}
+      >
+        {showIcons && <Layers className="h-5 w-5" />}
+        Programs
+      </Link>
+      <Link
+        href="/campaigns"
+        onClick={onNavigate}
+        className={cn(
+          baseLinkClasses,
+          pathname === "/campaigns" || pathname.startsWith("/campaigns/")
+            ? "text-primary"
+            : "text-muted-foreground"
+        )}
+      >
+        {showIcons && <Megaphone className="h-5 w-5" />}
+        Campaigns
+      </Link>
       {isRewardsEnabled && (
-        <Link
-          href="/rewards"
-          onClick={onNavigate}
-          className={cn(
-            baseLinkClasses,
-            pathname === "/rewards" ? "text-primary" : "text-muted-foreground"
-          )}
-        >
-          {showIcons && <Gift className="h-5 w-5" />}
-          Rewards
-        </Link>
-      )}
-      {isTransactionsEnabled && (
-        <Link
-          href="/orders"
-          onClick={onNavigate}
-          className={cn(
-            baseLinkClasses,
-            pathname === "/orders" ? "text-primary" : "text-muted-foreground"
-          )}
-        >
-          {showIcons && <ClipboardList className="h-5 w-5" />}
-          Transactions
-        </Link>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className={cn(
+              baseLinkClasses,
+              pathname === "/rewards" ||
+                pathname.startsWith("/catalogs") ||
+                pathname === "/orders" ||
+                pathname === "/financial"
+                ? "text-primary"
+                : "text-muted-foreground"
+            )}
+          >
+            {showIcons && <Gift className="h-5 w-5" />}
+            <span>Rewards</span>
+            <ChevronDown className="h-5 w-5" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/rewards"
+                  onClick={onNavigate}
+                  className="flex items-center gap-2 w-full"
+                >
+                  <Gift className="h-4 w-4" />
+                  <span>Reward List</span>
+                </Link>
+              </DropdownMenuItem>
+              {isCatalogsEnabled && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/catalogs"
+                      onClick={onNavigate}
+                      className="flex items-center gap-2 w-full"
+                    >
+                      <ShoppingBag className="h-4 w-4" />
+                      <span>Client Catalogs</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/catalogs/overview"
+                      onClick={onNavigate}
+                      className="flex items-center gap-2 w-full"
+                    >
+                      <ShoppingBag className="h-4 w-4" />
+                      <span>Catalog Overview</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              )}
+              {isTransactionsEnabled && (
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/orders"
+                    onClick={onNavigate}
+                    className="flex items-center gap-2 w-full"
+                  >
+                    <ClipboardList className="h-4 w-4" />
+                    <span>Transactions</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {isFinancialEnabled && (
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/financial"
+                    onClick={onNavigate}
+                    className="flex items-center gap-2 w-full"
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    <span>Financial</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
       {isClientsEnabled && canViewClients && (
         <Link
@@ -149,46 +231,6 @@ export function MainNav({
           Clients
         </Link>
       )}
-      {isCatalogsEnabled && (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            className={cn(
-              baseLinkClasses,
-              pathname.startsWith("/catalogs")
-                ? "text-primary"
-                : "text-muted-foreground"
-            )}
-          >
-            {showIcons && <ShoppingBag className="h-5 w-5" />}
-            <span>Catalogs</span>
-            <ChevronDown className="h-5 w-5" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuGroup>
-              <DropdownMenuItem asChild>
-                <Link
-                  href="/catalogs"
-                  onClick={onNavigate}
-                  className="flex items-center gap-2 w-full"
-                >
-                  <ShoppingBag className="h-4 w-4" />
-                  <span>Client Catalogs</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link
-                  href="/catalogs/overview"
-                  onClick={onNavigate}
-                  className="flex items-center gap-2 w-full"
-                >
-                  <ShoppingBag className="h-4 w-4" />
-                  <span>Catalog Overview</span>
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
       {isMembersEnabled && canViewMembers && (
         <Link
           href="/members"
@@ -200,19 +242,6 @@ export function MainNav({
         >
           {showIcons && <UserCircle className="h-5 w-5" />}
           Members
-        </Link>
-      )}
-      {isFinancialEnabled && (
-        <Link
-          href="/financial"
-          onClick={onNavigate}
-          className={cn(
-            baseLinkClasses,
-            pathname === "/financial" ? "text-primary" : "text-muted-foreground"
-          )}
-        >
-          {showIcons && <BarChart3 className="h-5 w-5" />}
-          Financial
         </Link>
       )}
       {isSystemEnabled && (

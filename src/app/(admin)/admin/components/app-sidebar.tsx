@@ -185,7 +185,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <div className="px-4 py-2">
           <div className="grid text-left text-sm leading-tight">
-            <span className="truncate text-lg font-semibold">Carepoynt</span>
+            <span className="truncate text-lg font-semibold">Poynts AI Portal</span>
             <span className="truncate text-sm text-muted-foreground">
               Rewards Management
             </span>
