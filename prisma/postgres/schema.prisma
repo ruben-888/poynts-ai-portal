@@ -101,17 +101,21 @@ model catalog_rewards {
 }
 
 model catalogs {
-  id              String            @id @db.VarChar(255)
-  name            String            @db.VarChar(255)
+  id              String               @id @db.VarChar(255)
+  name            String               @db.VarChar(255)
   description     String?
-  organization_fk String            @db.VarChar(255)
-  created_at      DateTime?         @default(now()) @db.Timestamp(6)
-  updated_at      DateTime?         @default(now()) @db.Timestamp(6)
+  organization_fk String               @db.VarChar(255)
+  created_at      DateTime?            @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?            @default(now()) @db.Timestamp(6)
+  type            catalog_type_enum?   @default(custom)
+  status          catalog_status_enum? @default(active)
   catalog_rewards catalog_rewards[]
-  organizations   organizations     @relation(fields: [organization_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "catalogs_organization_id_fkey")
+  organizations   organizations        @relation(fields: [organization_fk], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "catalogs_organization_id_fkey")
   orders          orders[]
 
   @@index([organization_fk], map: "idx_catalogs_org")
+  @@index([organization_fk, type], map: "idx_catalogs_org_type")
+  @@index([status], map: "idx_catalogs_status")
 }
 
 model member_campaign_progress {
@@ -640,4 +644,16 @@ enum user_role_enum {
   admin
   staff
   viewer
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum catalog_status_enum {
+  active
+  archived
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum catalog_type_enum {
+  master
+  custom
 }
