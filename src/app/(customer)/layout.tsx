@@ -14,7 +14,7 @@ export default async function SecureLayout({
     <TenantProvider>
       <div className="flex-col flex">
         {/* Desktop Navigation */}
-        <div className="border-b">
+        <div className="border-b bg-card">
           <div className="flex h-16 items-center px-4">
             {/* Mobile Navigation Trigger - only show on small screens */}
             <div className="md:hidden">
@@ -22,12 +22,10 @@ export default async function SecureLayout({
             </div>
 
             {/* Desktop Navigation - hide on small screens */}
-            <div className="hidden md:flex w-full">
+            <div className="hidden md:flex w-full items-center">
               <OrganizationSwitcher />
-              <MainNav className="mx-6" />
-              <div className="ml-auto flex items-center space-x-4">
-                <UserNav />
-              </div>
+              <MainNav className="ml-auto mr-10" />
+              <UserNav />
             </div>
 
             {/* Mobile Right Side - show UserNav on mobile */}

@@ -1,4 +1,5 @@
 import ProgramsClient from "./components/programs-client";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function ProgramsPage() {
   return (
@@ -9,7 +10,11 @@ export default function ProgramsPage() {
           Manage your reward programs and campaigns
         </p>
       </div>
-      <ProgramsClient />
+      <Card>
+        <CardContent className="pt-6">
+          <ProgramsClient />
+        </CardContent>
+      </Card>
     </div>
   );
 }

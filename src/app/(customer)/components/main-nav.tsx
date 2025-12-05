@@ -112,19 +112,6 @@ export function MainNav({
         Dashboard
       </Link>
       <Link
-        href="/programs"
-        onClick={onNavigate}
-        className={cn(
-          baseLinkClasses,
-          pathname === "/programs" || pathname.startsWith("/programs/")
-            ? "text-primary"
-            : "text-muted-foreground"
-        )}
-      >
-        {showIcons && <Layers className="h-5 w-5" />}
-        Programs
-      </Link>
-      <Link
         href="/campaigns"
         onClick={onNavigate}
         className={cn(
@@ -145,7 +132,9 @@ export function MainNav({
               pathname === "/rewards" ||
                 pathname.startsWith("/catalogs") ||
                 pathname === "/orders" ||
-                pathname === "/financial"
+                pathname === "/financial" ||
+                pathname === "/programs" ||
+                pathname.startsWith("/programs/")
                 ? "text-primary"
                 : "text-muted-foreground"
             )}
@@ -156,6 +145,16 @@ export function MainNav({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuGroup>
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/programs"
+                  onClick={onNavigate}
+                  className="flex items-center gap-2 w-full"
+                >
+                  <Layers className="h-4 w-4" />
+                  <span>Programs</span>
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link
                   href="/rewards"
@@ -175,10 +174,10 @@ export function MainNav({
                       className="flex items-center gap-2 w-full"
                     >
                       <ShoppingBag className="h-4 w-4" />
-                      <span>Client Catalogs</span>
+                      <span>Catalogs</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
+{/*                  <DropdownMenuItem asChild>
                     <Link
                       href="/catalogs/overview"
                       onClick={onNavigate}
@@ -187,10 +186,10 @@ export function MainNav({
                       <ShoppingBag className="h-4 w-4" />
                       <span>Catalog Overview</span>
                     </Link>
-                  </DropdownMenuItem>
+                  </DropdownMenuItem>*/}
                 </>
               )}
-              {isTransactionsEnabled && (
+              {false && isTransactionsEnabled && (
                 <DropdownMenuItem asChild>
                   <Link
                     href="/orders"
@@ -202,7 +201,7 @@ export function MainNav({
                   </Link>
                 </DropdownMenuItem>
               )}
-              {isFinancialEnabled && (
+              {false && isFinancialEnabled && (
                 <DropdownMenuItem asChild>
                   <Link
                     href="/financial"
@@ -244,7 +243,7 @@ export function MainNav({
           Members
         </Link>
       )}
-      {isSystemEnabled && (
+      {false && isSystemEnabled && (
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(
@@ -338,7 +337,7 @@ export function MainNav({
           </DropdownMenuContent>
         </DropdownMenu>
       )}
-      {isSupportEnabled && (
+      {false && isSupportEnabled && (
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(

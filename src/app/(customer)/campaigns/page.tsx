@@ -1,4 +1,5 @@
 import CampaignsClient from "./components/campaigns-client";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function CampaignsPage() {
   return (
@@ -9,7 +10,11 @@ export default function CampaignsPage() {
           Manage your marketing campaigns and member activities
         </p>
       </div>
-      <CampaignsClient />
+      <Card>
+        <CardContent className="pt-6">
+          <CampaignsClient />
+        </CardContent>
+      </Card>
     </div>
   );
 }

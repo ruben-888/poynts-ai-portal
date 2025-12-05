@@ -61,9 +61,10 @@ export default async function RootLayout({
         }
       : null;
 
-  // Get environment for sandbox bar
+  // Get environment for sandbox bar (disabled for now - set to true to re-enable)
   const environment = process.env.ENVIRONMENT;
-  const shouldShowEnvironmentBar =
+  const shouldShowEnvironmentBar = false;
+  const _environmentBarEnabled =
     environment === "SANDBOX-WELL" ||
     environment === "QA" ||
     environment === "DEV";
