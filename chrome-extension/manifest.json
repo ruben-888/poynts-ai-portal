@@ -2,12 +2,18 @@
   "manifest_version": 3,
   "name": "Poynts Campaign Demo",
   "version": "1.0.0",
-  "description": "Injects Poynts campaign widgets into partner sites for demo purposes",
-  "permissions": ["activeTab"],
-  "host_permissions": ["https://twinprotocol.ai/*"],
+  "description": "Displays Poynts loyalty campaign widgets on partner websites. Track rewards, complete challenges, and earn points.",
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": [
+    "https://twinprotocol.ai/*",
+    "https://www.twinprotocol.ai/*"
+  ],
   "content_scripts": [
     {
-      "matches": ["https://twinprotocol.ai/*"],
+      "matches": [
+        "https://twinprotocol.ai/*",
+        "https://www.twinprotocol.ai/*"
+      ],
       "js": ["config.js", "content.js"],
       "run_at": "document_idle"
     }
@@ -16,5 +22,7 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  "homepage_url": "https://poynts-ai-portal.vercel.app/extension",
+  "short_name": "Poynts"
 }

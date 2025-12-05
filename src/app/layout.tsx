@@ -20,6 +20,14 @@ import { Toaster } from "sonner";
 export const metadata: Metadata = {
   title: "Poynts AI Portal",
   description: "Poynts AI Portal",
+  icons: {
+    icon: [
+      { url: "/icon.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/apple-icon.png",
+  },
+  manifest: "/manifest.json",
 };
 
 interface RootLayoutProps {

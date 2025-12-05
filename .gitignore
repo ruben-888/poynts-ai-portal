@@ -411,3 +411,6 @@ next-env.d.ts
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Generated extension build
+/public/extension/

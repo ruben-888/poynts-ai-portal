@@ -1,56 +1,28 @@
 /**
  * Poynts Campaign Widget Injector
  *
- * This content script detects the current page and loads the appropriate
- * campaign widget from the Poynts API server.
+ * This content script sends the current page context to the Poynts API,
+ * which returns the appropriate widgets to display based on the client domain.
  */
 
 (function() {
   'use strict';
 
   // Configuration - loaded from config.js or defaults to production
-  const API_BASE_URL = window.POYNTS_CONFIG?.API_BASE_URL || 'https://poynts-ai-portal.vercel.app/api/campaign-widget';
+  const API_BASE_URL = window.POYNTS_CONFIG?.API_BASE_URL || 'https://poynts-ai-portal.vercel.app/api/extension/widgets';
   const WIDGET_ID_PREFIX = 'poynts-widget-';
 
-  // Global widgets: load on ALL pages
-  const GLOBAL_WIDGETS = [
-    {
-      widgetType: 'nav-badge',
-      waitForSelector: 'nav.fixed'
-    }
-  ];
-
-  // Page-specific configuration: maps URL patterns to widget types
-  const PAGE_CONFIG = [
-    {
-      // Profile Vault page - inject the setup tracker
-      pattern: /\/profile\/?(\?tab=vault)?$/,
-      widgetType: 'setup-tracker',
-      waitForSelector: '[aria-labelledby*="vault"]'
-    },
-    // Add more page configurations here as needed:
-    // {
-    //   pattern: /\/marketplace/,
-    //   widgetType: 'rewards-banner',
-    //   waitForSelector: '.marketplace-container'
-    // },
-  ];
-
-  // Track which widgets have been loaded to avoid duplicates
+  // Track loaded widgets to avoid duplicates
   const loadedWidgets = new Set();
 
-  /**
-   * Detect which page we're on and return the matching config
-   */
-  function detectPage() {
-    const path = window.location.pathname + window.location.search;
-
-    for (const config of PAGE_CONFIG) {
-      if (config.pattern.test(path)) {
-        return config;
-      }
-    }
-    return null;
+  // Current page context
+  function getPageContext() {
+    return {
+      domain: window.location.hostname,
+      path: window.location.pathname,
+      search: window.location.search,
+      url: window.location.href
+    };
   }
 
   /**
@@ -58,14 +30,12 @@
    */
   function waitForElement(selector, timeout = 10000) {
     return new Promise((resolve, reject) => {
-      // Check if already exists
       const existing = document.querySelector(selector);
       if (existing) {
         resolve(existing);
         return;
       }
 
-      // Set up observer
       const observer = new MutationObserver((mutations, obs) => {
         const element = document.querySelector(selector);
         if (element) {
@@ -79,7 +49,6 @@
         subtree: true
       });
 
-      // Timeout fallback
       setTimeout(() => {
         observer.disconnect();
         reject(new Error(`Timeout waiting for ${selector}`));
@@ -88,93 +57,109 @@
   }
 
   /**
-   * Load and inject a widget script from the API
+   * Fetch widget configuration from the server
    */
-  async function loadWidget(config) {
-    const widgetId = WIDGET_ID_PREFIX + config.widgetType;
+  async function fetchWidgetConfig() {
+    const context = getPageContext();
+    const params = new URLSearchParams({
+      domain: context.domain,
+      path: context.path,
+      url: context.url
+    });
+
+    try {
+      const response = await fetch(`${API_BASE_URL}?${params}`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('[Poynts] Failed to fetch widget config:', error);
+      return { widgets: [] };
+    }
+  }
+
+  /**
+   * Load and inject a widget script
+   */
+  async function loadWidget(widget) {
+    const widgetId = WIDGET_ID_PREFIX + widget.id;
 
     // Don't load if already loaded
-    if (loadedWidgets.has(config.widgetType)) {
-      console.log(`[Poynts] Widget ${config.widgetType} already loaded`);
+    if (loadedWidgets.has(widget.id)) {
+      console.log(`[Poynts] Widget ${widget.id} already loaded`);
       return;
     }
 
     // Don't load if widget element already exists
     if (document.getElementById(widgetId)) {
-      console.log(`[Poynts] Widget ${config.widgetType} already in DOM`);
+      console.log(`[Poynts] Widget ${widget.id} already in DOM`);
       return;
     }
 
     try {
-      console.log(`[Poynts] Loading widget: ${config.widgetType}`);
+      console.log(`[Poynts] Loading widget: ${widget.id}`);
 
-      // Wait for the target element to be present
-      if (config.waitForSelector) {
-        await waitForElement(config.waitForSelector);
+      // Wait for target element if specified
+      if (widget.waitForSelector) {
+        await waitForElement(widget.waitForSelector);
       }
 
-      // Create and inject the script
+      // Inject the widget script
       const script = document.createElement('script');
       script.id = widgetId + '-script';
-      script.src = `${API_BASE_URL}?widget=${config.widgetType}&t=${Date.now()}`;
-      script.async = true;
-
-      script.onload = () => {
-        console.log(`[Poynts] Widget ${config.widgetType} loaded successfully`);
-        loadedWidgets.add(config.widgetType);
-      };
+      script.textContent = widget.code;
 
       script.onerror = (e) => {
-        console.error(`[Poynts] Failed to load widget ${config.widgetType}:`, e);
+        console.error(`[Poynts] Failed to load widget ${widget.id}:`, e);
       };
 
       document.head.appendChild(script);
+      loadedWidgets.add(widget.id);
+      console.log(`[Poynts] Widget ${widget.id} loaded successfully`);
+
     } catch (error) {
-      console.error(`[Poynts] Error loading widget:`, error);
+      console.error(`[Poynts] Error loading widget ${widget.id}:`, error);
+    }
+  }
+
+  /**
+   * Load all widgets for the current page
+   */
+  async function loadWidgets() {
+    const config = await fetchWidgetConfig();
+
+    if (!config.widgets || config.widgets.length === 0) {
+      console.log('[Poynts] No widgets configured for this page');
+      return;
+    }
+
+    console.log(`[Poynts] Loading ${config.widgets.length} widget(s)`);
+
+    for (const widget of config.widgets) {
+      await loadWidget(widget);
     }
   }
 
   /**
    * Initialize the widget loader
    */
-  function init() {
-    console.log('[Poynts] Campaign widget injector initialized');
+  async function init() {
+    const context = getPageContext();
+    console.log(`[Poynts] Initialized on ${context.domain}${context.path}`);
 
-    // Load global widgets (appear on all pages)
-    GLOBAL_WIDGETS.forEach(config => {
-      console.log(`[Poynts] Loading global widget: ${config.widgetType}`);
-      loadWidget(config);
-    });
+    await loadWidgets();
 
-    // Load page-specific widgets
-    const pageConfig = detectPage();
-
-    if (pageConfig) {
-      console.log(`[Poynts] Detected page type: ${pageConfig.widgetType}`);
-      loadWidget(pageConfig);
-    } else {
-      console.log('[Poynts] No page-specific widget for this page');
-    }
-
-    // Watch for SPA navigation (URL changes without full page reload)
+    // Watch for SPA navigation
     let lastUrl = window.location.href;
 
     const urlObserver = new MutationObserver(() => {
       if (window.location.href !== lastUrl) {
         lastUrl = window.location.href;
-        console.log('[Poynts] URL changed, checking for widgets');
+        console.log('[Poynts] URL changed, reloading widgets');
 
-        // Re-check global widgets (in case nav was re-rendered)
-        GLOBAL_WIDGETS.forEach(config => {
-          loadWidget(config);
-        });
-
-        // Check for page-specific widgets
-        const newPageConfig = detectPage();
-        if (newPageConfig) {
-          // Small delay to let the new page content render
-          setTimeout(() => loadWidget(newPageConfig), 500);
-        }
+        // Small delay to let new page content render
+        setTimeout(loadWidgets, 500);
       }
     });
 
