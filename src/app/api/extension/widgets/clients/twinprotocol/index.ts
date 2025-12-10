@@ -2,13 +2,26 @@
  * Twin Protocol Client Configuration
  *
  * This is the main entry point for the Twin Protocol demo.
- * Import widgets from separate files and configure which pages they appear on.
+ * Defines which widgets appear on which pages.
+ * Actual widget code is served dynamically via /api/extension/widgets/script
  */
 
-import { ClientConfig, Widget } from "../types";
+import { ClientConfig, WidgetMetadata } from "../types";
 import { config } from "./config";
-import { navBadgeWidget } from "./widgets/nav-badge";
-import { setupTrackerWidget } from "./widgets/setup-tracker";
+
+/**
+ * Widget metadata definitions
+ * These are returned by the API to tell the extension which widgets to load
+ */
+const navBadgeMetadata: WidgetMetadata = {
+  id: "nav-badge",
+  waitForSelector: "nav",
+};
+
+const setupTrackerMetadata: WidgetMetadata = {
+  id: "setup-tracker",
+  waitForSelector: '[role="tabpanel"]',
+};
 
 /**
  * Twin Protocol Configuration
@@ -18,20 +31,16 @@ export const twinProtocolConfig: ClientConfig = {
   domains: config.domains,
   config, // Expose full config for API access
 
-  getWidgets(path: string): Widget[] {
-    const widgets: Widget[] = [];
+  getWidgets(path: string): WidgetMetadata[] {
+    const widgets: WidgetMetadata[] = [];
 
     // Nav badge appears on ALL pages
-    widgets.push(navBadgeWidget);
+    widgets.push(navBadgeMetadata);
 
     // Setup tracker only on profile/vault pages
     if (path.includes("/profile") || path.includes("/vault")) {
-      widgets.push(setupTrackerWidget);
+      widgets.push(setupTrackerMetadata);
     }
-
-    // Future: Dynamic widgets based on campaigns
-    // const campaigns = await loadCampaigns(config.organizationId);
-    // widgets.push(createCampaignWidget(campaigns));
 
     return widgets;
   },

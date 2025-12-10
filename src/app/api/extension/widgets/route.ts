@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getClientConfig } from "./clients";
 
+// CORS headers for extension requests
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+// Handle preflight requests
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const domain = searchParams.get("domain");
@@ -9,7 +21,7 @@ export async function GET(request: NextRequest) {
   if (!domain) {
     return NextResponse.json(
       { error: "Missing domain parameter" },
-      { status: 400 }
+      { status: 400, headers: corsHeaders }
     );
   }
 
@@ -21,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     if (!clientConfig) {
       console.log(`[Widgets API] No client config found for: ${domain}`);
-      return NextResponse.json({ widgets: [] });
+      return NextResponse.json({ widgets: [] }, { headers: corsHeaders });
     }
 
     // Get widgets for this page
@@ -32,12 +44,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       client: clientConfig.name,
       widgets,
-    });
+    }, { headers: corsHeaders });
   } catch (error) {
     console.error("[Widgets API] Error:", error);
     return NextResponse.json(
       { error: "Failed to get widgets" },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

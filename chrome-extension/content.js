@@ -1,8 +1,11 @@
 /**
  * Poynts Campaign Widget Injector
  *
- * This content script sends the current page context to the Poynts API,
- * which returns the appropriate widgets to display based on the client domain.
+ * This content script detects the current page and loads the appropriate
+ * campaign widgets from the Poynts API server as external scripts.
+ *
+ * External script loading bypasses CSP restrictions because the browser
+ * fetches the script from an allowed origin.
  */
 
 (function() {
@@ -10,6 +13,7 @@
 
   // Configuration - loaded from config.js or defaults to production
   const API_BASE_URL = window.POYNTS_CONFIG?.API_BASE_URL || 'https://poynts-ai-portal.vercel.app/api/extension/widgets';
+  const SCRIPT_BASE_URL = API_BASE_URL.replace('/widgets', '/widgets/script');
   const WIDGET_ID_PREFIX = 'poynts-widget-';
 
   // Track loaded widgets to avoid duplicates
@@ -58,6 +62,7 @@
 
   /**
    * Fetch widget configuration from the server
+   * Returns metadata about which widgets to load (not the code itself)
    */
   async function fetchWidgetConfig() {
     const context = getPageContext();
@@ -80,10 +85,13 @@
   }
 
   /**
-   * Load and inject a widget script
+   * Load a widget by injecting an external script tag
+   * The script is served dynamically from our API with embedded data
    */
   async function loadWidget(widget) {
     const widgetId = WIDGET_ID_PREFIX + widget.id;
+    const scriptId = widgetId + '-script';
+    const context = getPageContext();
 
     // Don't load if already loaded
     if (loadedWidgets.has(widget.id)) {
@@ -91,9 +99,9 @@
       return;
     }
 
-    // Don't load if widget element already exists
-    if (document.getElementById(widgetId)) {
-      console.log(`[Poynts] Widget ${widget.id} already in DOM`);
+    // Don't load if script already exists
+    if (document.getElementById(scriptId)) {
+      console.log(`[Poynts] Widget ${widget.id} script already in DOM`);
       return;
     }
 
@@ -105,18 +113,22 @@
         await waitForElement(widget.waitForSelector);
       }
 
-      // Inject the widget script
+      // Create external script tag - this bypasses CSP!
       const script = document.createElement('script');
-      script.id = widgetId + '-script';
-      script.textContent = widget.code;
+      script.id = scriptId;
+      script.src = `${SCRIPT_BASE_URL}?widget=${widget.id}&domain=${context.domain}&path=${encodeURIComponent(context.path)}&t=${Date.now()}`;
+      script.async = true;
+
+      script.onload = () => {
+        loadedWidgets.add(widget.id);
+        console.log(`[Poynts] Widget ${widget.id} loaded successfully`);
+      };
 
       script.onerror = (e) => {
         console.error(`[Poynts] Failed to load widget ${widget.id}:`, e);
       };
 
       document.head.appendChild(script);
-      loadedWidgets.add(widget.id);
-      console.log(`[Poynts] Widget ${widget.id} loaded successfully`);
 
     } catch (error) {
       console.error(`[Poynts] Error loading widget ${widget.id}:`, error);

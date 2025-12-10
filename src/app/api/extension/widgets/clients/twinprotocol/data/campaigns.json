@@ -1,0 +1,58 @@
+{
+  "campaigns": [
+    {
+      "id": "1",
+      "title": "Launch Your Twin",
+      "description": "Create and share your AI Twin to start earning rewards from interactions",
+      "progress": { "completed": 4, "total": 5 },
+      "pointsAvailable": 1000,
+      "pointsEarned": 650,
+      "category": "twin-creation",
+      "tasks": [
+        { "id": "1-1", "title": "Complete Twin setup", "description": "Finish creating and configuring your AI Twin profile.", "points": 200, "completed": true, "duration": "30 min", "icon": "user-plus" },
+        { "id": "1-2", "title": "Share Twin link on social media", "description": "Post your Twin link on at least one social platform.", "points": 150, "completed": true, "duration": "10 min", "icon": "share" },
+        { "id": "1-3", "title": "Send Twin to 5 contacts", "description": "Share your Twin via email or message with 5 people.", "points": 200, "completed": true, "duration": "20 min", "icon": "mail" },
+        { "id": "1-4", "title": "Watch Twin tutorial", "description": "Learn how to maximize value from your Twin interactions.", "points": 100, "completed": true, "duration": "15 min", "icon": "video" },
+        { "id": "1-5", "title": "Get first Twin interaction", "description": "Earn bonus points when someone first interacts with your Twin.", "points": 350, "completed": false, "duration": "Ongoing", "icon": "message-circle" }
+      ]
+    },
+    {
+      "id": "2",
+      "title": "Twin Engagement Milestone",
+      "description": "Track and celebrate as more people interact with your AI Twin",
+      "progress": { "completed": 1, "total": 6 },
+      "pointsAvailable": 3000,
+      "pointsEarned": 50,
+      "category": "twin-growth",
+      "tasks": [
+        { "id": "2-1", "title": "First interaction achieved", "description": "Someone has interacted with your Twin for the first time!", "points": 50, "completed": true, "duration": "-", "icon": "trophy" },
+        { "id": "2-2", "title": "Reach 10 interactions", "description": "Your Twin reaches 10 total interactions.", "points": 200, "completed": false, "duration": "Ongoing", "icon": "users" },
+        { "id": "2-3", "title": "Reach 50 interactions", "description": "Your Twin reaches 50 total interactions.", "points": 500, "completed": false, "duration": "Ongoing", "icon": "users" },
+        { "id": "2-4", "title": "Reach 100 interactions", "description": "Your Twin reaches 100 total interactions.", "points": 1000, "completed": false, "duration": "Ongoing", "icon": "users" },
+        { "id": "2-5", "title": "Complete engagement survey", "description": "Tell us about your Twin experience so far.", "points": 250, "completed": false, "duration": "10 min", "icon": "clipboard" },
+        { "id": "2-6", "title": "Review Twin analytics", "description": "Check your Twin dashboard and review performance metrics.", "points": 1000, "completed": false, "duration": "Weekly", "icon": "bar-chart" }
+      ]
+    },
+    {
+      "id": "3",
+      "title": "Twin Protocol Ambassador",
+      "description": "Become a Twin Protocol ambassador and earn bonus rewards",
+      "progress": { "completed": 0, "total": 4 },
+      "pointsAvailable": 5000,
+      "pointsEarned": 0,
+      "category": "twin-ambassador",
+      "tasks": [
+        { "id": "3-1", "title": "Share Twin success story", "description": "Write a short testimonial about your Twin experience.", "points": 500, "completed": false, "duration": "20 min", "icon": "edit" },
+        { "id": "3-2", "title": "Refer 3 friends to Twin Protocol", "description": "Invite friends to create their own AI Twins.", "points": 1500, "completed": false, "duration": "Ongoing", "icon": "user-plus" },
+        { "id": "3-3", "title": "Create Twin tutorial content", "description": "Make a video or blog post showing others how to use Twin Protocol.", "points": 2000, "completed": false, "duration": "1-2 hours", "icon": "video" },
+        { "id": "3-4", "title": "Participate in Twin community", "description": "Join the Twin Protocol community forums and share insights.", "points": 1000, "completed": false, "duration": "Ongoing", "icon": "message-square" }
+      ]
+    }
+  ],
+  "categories": [
+    { "id": "twin-creation", "name": "Twin Creation", "description": "Set up and launch your AI Twin", "icon": "user-plus", "campaignCount": 1 },
+    { "id": "twin-growth", "name": "Twin Engagement", "description": "Track and grow your Twin interactions", "icon": "trending-up", "campaignCount": 1 },
+    { "id": "twin-ambassador", "name": "Twin Ambassador", "description": "Become a Twin Protocol advocate", "icon": "award", "campaignCount": 1 },
+    { "id": "twin-analytics", "name": "Twin Analytics", "description": "Monitor and optimize your Twin performance", "icon": "bar-chart", "campaignCount": 0 }
+  ]
+}

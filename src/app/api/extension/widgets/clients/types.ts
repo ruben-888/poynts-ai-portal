@@ -2,6 +2,21 @@
  * Shared Types for Extension Widgets
  */
 
+/**
+ * Widget metadata returned by the API
+ * The extension uses this to request the actual script from /script endpoint
+ */
+export interface WidgetMetadata {
+  /** Unique identifier for this widget (prefix with client name) */
+  id: string;
+  /** Optional CSS selector to wait for before injecting */
+  waitForSelector?: string;
+}
+
+/**
+ * Full widget with code (used internally, not returned by API)
+ * @deprecated Use WidgetMetadata instead - code is now served via /script endpoint
+ */
 export interface Widget {
   /** Unique identifier for this widget (prefix with client name) */
   id: string;
@@ -36,8 +51,8 @@ export interface ClientConfig {
   name: string;
   /** Domains this client matches (e.g., ["example.com", "www.example.com"]) */
   domains: string[];
-  /** Function that returns widgets for a given path */
-  getWidgets: (path: string) => Widget[];
+  /** Function that returns widget metadata for a given path */
+  getWidgets: (path: string) => WidgetMetadata[];
   /** Optional: Full config data for API access */
   config?: ClientConfigData;
 }

@@ -1,0 +1,35 @@
+{
+  "title": "Complete Your Twin Setup",
+  "subtitle": "Finish setting up your AI Twin to unlock all features and earn rewards",
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Set up Twin's unique name",
+      "description": "Choose a unique identifier for your AI Twin. This name will be used across the platform and help others discover your Twin.",
+      "points": 100,
+      "completed": true
+    },
+    {
+      "id": 2,
+      "title": "Upload your SD avatar",
+      "description": "Upload a standard definition profile picture for your Twin. This will be the visual representation of your Twin in the platform.",
+      "points": 100,
+      "completed": true
+    },
+    {
+      "id": 3,
+      "title": "Upload HD video",
+      "description": "Upload a high-definition video to train your Twin's visual model. This helps create a more realistic and personalized Twin experience.",
+      "points": 100,
+      "completed": false
+    },
+    {
+      "id": 4,
+      "title": "Upload audio sample",
+      "description": "Provide audio samples to clone your voice. Your Twin will use this to communicate in your unique voice and speaking style.",
+      "points": 100,
+      "completed": false
+    }
+  ],
+  "redeemUrl": "https://poynts-ai-portal.vercel.app/landing-pages/marketplace"
+}
