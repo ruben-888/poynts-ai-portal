@@ -145,6 +145,8 @@ export function ProviderSelector({
                 alt={`${config.displayName} logo`}
                 fill
                 className="object-cover"
+                unoptimized
+                key={config.logo}
               />
             </div>
 

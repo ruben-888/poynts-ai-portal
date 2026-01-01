@@ -27,6 +27,8 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 // This is sample data.
 const data = {
@@ -81,10 +83,6 @@ const data = {
         {
           title: "New Order",
           url: "/admin/send-rewards",
-        },
-        {
-          title: "Edit Email Template",
-          url: "/admin/send-rewards/edit-email",
         },
       ],
     },
@@ -192,6 +190,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <ArrowLeft className="h-4 w-4" />
             <span className="truncate">Return to Customer View</span>
           </a>
+
+          {/* Send Rewards Button */}
+          <div className="px-4 pb-2 pt-1">
+            <Link href="/admin/send-rewards">
+              <Button className="w-full" size="sm">
+                <Send className="mr-2 h-4 w-4" />
+                Send Rewards
+              </Button>
+            </Link>
+          </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
