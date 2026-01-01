@@ -36,7 +36,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     return forwardRequest({
       method: "GET",
-      path: `/rewards/${id}`,
+      path: `/v1/rewards/${id}`,
     });
   } catch (error) {
     return handleError(error);

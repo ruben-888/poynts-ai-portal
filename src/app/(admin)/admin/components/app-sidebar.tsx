@@ -15,6 +15,7 @@ import {
   History,
   ArrowLeft,
   Archive,
+  Send,
 } from "lucide-react";
 
 import { NavMain } from "./nav-main";
@@ -48,38 +49,6 @@ const data = {
   ],
   navMain: [
     {
-      title: "Rewards Management",
-      url: "/admin/legacy",
-      icon: Gift,
-      isActive: true,
-      items: [
-        {
-          title: "Gift Cards",
-          url: "/admin/legacy/giftcards",
-        },
-        {
-          title: "Brands",
-          url: "/admin/rewards/brands",
-        },
-        {
-          title: "Tango Catalog",
-          url: "/admin/providers/tango/catalog",
-        },
-        {
-          title: "Blackhawk Catalog",
-          url: "/admin/providers/blackhawk/catalog",
-        },
-        {
-          title: "Tremendous Catalog",
-          url: "/admin/providers/tremendous/catalog",
-        },
-        {
-          title: "Test Giftcard",
-          url: "/admin/legacy/giftcards/test",
-        },
-      ],
-    },
-    {
       title: "Dashboard",
       url: "/admin/dashboard",
       icon: LayoutDashboard,
@@ -91,7 +60,92 @@ const data = {
         }
       ],
     },
- 
+    {
+      title: "Organizations",
+      url: "/admin/organizations",
+      icon: Users,
+      isActive: true,
+      items: [
+        {
+          title: "Browse",
+          url: "/admin/organizations",
+        },
+      ],
+    },
+    {
+      title: "Send Rewards",
+      url: "/admin/send-rewards",
+      icon: Send,
+      isActive: true,
+      items: [
+        {
+          title: "New Order",
+          url: "/admin/send-rewards",
+        },
+        {
+          title: "Edit Email Template",
+          url: "/admin/send-rewards/edit-email",
+        },
+      ],
+    },
+    {
+      title: "Rewards & Catalog",
+      url: "/admin/rewards",
+      icon: Gift,
+      isActive: true,
+      items: [
+        {
+          title: "Gift Cards",
+          url: "/admin/rewards",
+        },
+        {
+          title: "Offers",
+          url: "/admin/rewards/offers",
+        },
+        {
+          title: "Brands",
+          url: "/admin/rewards/brands",
+        },
+      ],
+    },
+    {
+      title: "Source Providers",
+      url: "/admin/providers",
+      icon: Building2,
+      isActive: true,
+      items: [
+        {
+          title: "Overview",
+          url: "/admin/providers",
+        },
+        {
+          title: "Source Items",
+          url: "/admin/rewards/source-items",
+        },
+        {
+          title: "Catalogs",
+          url: "/admin/providers/catalogs",
+          items: [
+            {
+              title: "Tango",
+              url: "/admin/providers/tango/catalog",
+            },
+            {
+              title: "Blackhawk",
+              url: "/admin/providers/blackhawk/catalog",
+            },
+            {
+              title: "Tremendous",
+              url: "/admin/providers/tremendous/catalog",
+            },
+          ],
+        },
+        {
+          title: "Settings",
+          url: "/admin/providers/settings",
+        },
+      ],
+    },
     {
       title: "Financial",
       url: "/admin/financial",
@@ -112,67 +166,6 @@ const data = {
         {
           title: "Client Banks",
           url: "/admin/legacy/financial/client-banks",
-        },
-      ],
-    },
-    // {
-    //   title: "Settings",
-    //   url: "/admin/settings",
-    //   icon: Settings2,
-    //   items: [
-
-    //     {
-    //       title: "Security",
-    //       url: "/admin/settings/security",
-    //     },
-    //     {
-    //       title: "Notifications",
-    //       url: "/admin/settings/notifications",
-    //     }
-    //   ],
-    // },
-  ],
-  draftScreens: [
-    {
-      title: "Rewards",
-      url: "/admin/rewards",
-      icon: Archive,
-      isActive: false,
-      items: [
-        {
-          title: "Gift Cards",
-          url: "/admin/rewards/gift-cards",
-        },
-     
-        {
-          title: "Inventory",
-          url: "/admin/rewards/inventory",
-        },
-      ],
-    },
-    {
-      title: "Customers",
-      url: "#",
-      icon: Users,
-    },
-
-    {
-      title: "Providers",
-      url: "/admin/providers",
-      icon: Building2,
-      isActive: true,
-      items: [
-        {
-          title: "Overview",
-          url: "/admin/providers",
-        },
-        {
-          title: "Manage",
-          url: "/admin/providers/status",
-        },
-        {
-          title: "Settings",
-          url: "/admin/providers/settings",
         },
       ],
     },
@@ -203,7 +196,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} title="Platform" />
-        <NavMain items={data.draftScreens} title="Draft Screens" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

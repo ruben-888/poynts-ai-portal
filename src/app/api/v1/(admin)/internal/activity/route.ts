@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     return forwardRequest(
       {
         method: "POST",
-        path: "/internal/activity",
+        path: "/v1/internal/activity",
         body,
       },
       {

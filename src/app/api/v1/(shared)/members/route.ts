@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     // Forward to backend
     return forwardRequest({
       method: "GET",
-      path: "/members",
+      path: "/v1/members",
       queryParams,
     });
   } catch (error) {
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     return forwardRequest(
       {
         method: "POST",
-        path: "/members",
+        path: "/v1/members",
         body,
       },
       {},

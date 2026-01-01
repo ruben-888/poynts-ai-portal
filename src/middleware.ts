@@ -14,10 +14,6 @@ const isApiRoute = createRouteMatcher(["/api/(.*)", "/trpc/(.*)"]);
 
 // Current app assumes all users are members of wellco or carepoynt and should have access to organizational data and
 // resources. Once all data requires organization level authorization remove the org slug checks.
-const allowedCPAdminOrgSlugs = [
-  "carepoynt",
-  "carepoynt-qa",
-];
 const allowedOrgSlugs = [
   "carepoynt",
   "carepoynt-qa",
@@ -32,15 +28,12 @@ export default clerkMiddleware(async (auth, req) => {
     return;
   }
 
-  // Handle API routes differently
+  // Handle API routes - authentication required only
   if (isApiRoute(req)) {
     try {
-      const { userId, orgSlug } = await auth();
+      const { userId } = await auth();
       if (userId) {
-        if (allowedOrgSlugs.includes(orgSlug ?? "")) {
-          return;
-        }
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        return;
       }
     } catch { }
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -50,18 +43,9 @@ export default clerkMiddleware(async (auth, req) => {
     return;
   }
 
-  // Restrict CP Admin routes to users with specific permissions
+  // CP Admin routes - authentication required, no permission check
   if (isCPAdminRoute(req)) {
-    // Check if user is logged in and has permission.
-    const { orgSlug } = await auth.protect((has) => {
-      // Clerk uses a notfound error on failure because the next app router appears to be at an early alpha stage.
-      return has({ permission: "org:cpadmin:access" });
-    });
-    // Check user organization.
-    if (!allowedCPAdminOrgSlugs.includes(orgSlug ?? "")) {
-      // Use a notfound error on failure to create a consistent, but horrifically wrong, response pattern.
-      notFound();
-    }
+    await auth.protect();
     return;
   }
 

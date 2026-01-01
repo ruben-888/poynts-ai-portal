@@ -1,16 +1,9 @@
-import React from "react";
+import RewardsClient from "./components/rewards-client";
 
-const AdminRewardsPage = () => {
+export default function RewardsPage() {
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Rewards Administration</h1>
-      <div className="bg-white rounded-lg shadow p-4">
-        <p className="text-gray-700">
-          Welcome to the rewards management dashboard.
-        </p>
-      </div>
+      <RewardsClient />
     </div>
   );
-};
-
-export default AdminRewardsPage;
+}

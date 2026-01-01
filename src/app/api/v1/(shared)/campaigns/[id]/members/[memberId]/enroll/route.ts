@@ -38,7 +38,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     return forwardRequest(
       {
         method: "POST",
-        path: `/campaigns/${id}/members/${memberId}/enroll`,
+        path: `/v1/campaigns/${id}/members/${memberId}/enroll`,
       },
       {},
       201
@@ -71,7 +71,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     return forwardRequest(
       {
         method: "DELETE",
-        path: `/campaigns/${id}/members/${memberId}/enroll`,
+        path: `/v1/campaigns/${id}/members/${memberId}/enroll`,
       },
       {},
       204

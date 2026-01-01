@@ -9,26 +9,15 @@ export default function LoginPage() {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <Link href="/dashboard" className="flex items-center gap-3">
+          <Link href="/dashboard" className="flex items-center">
             <Image
-              src="/img/poynts-temp-logo_purple.png"
+              src="/img/poynts-ai-logo-horizontal.png"
               alt="Poynts AI Logo"
-              width={48}
+              width={200}
               height={48}
               priority
-              className="h-12 w-auto dark:hidden"
+              className="h-12 w-auto"
             />
-            <Image
-              src="/img/poynts-temp-logo_white.png"
-              alt="Poynts AI Logo"
-              width={48}
-              height={48}
-              priority
-              className="hidden h-12 w-auto dark:block"
-            />
-            <span className="font-inter text-4xl font-semibold tracking-tight text-brand dark:text-white">
-              Poynts AI
-            </span>
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack -p 4000",
     "build": "pnpm prisma:generate && pnpm build:extension && next build",
     "build:extension": "node scripts/build-extension.js",
     "start": "next start",

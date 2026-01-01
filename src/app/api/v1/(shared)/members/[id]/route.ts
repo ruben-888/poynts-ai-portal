@@ -41,7 +41,7 @@ export async function GET(request: Request, { params }: RouteParams) {
     // Forward to backend
     return forwardRequest({
       method: "GET",
-      path: `/members/${id}`,
+      path: `/v1/members/${id}`,
     });
   } catch (error) {
     return handleError(error);
@@ -80,7 +80,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     // Forward to backend
     return forwardRequest({
       method: "PATCH",
-      path: `/members/${id}`,
+      path: `/v1/members/${id}`,
       body,
     });
   } catch (error) {

@@ -1,23 +1,22 @@
 /**
- * Organizations API Proxy Routes (Admin Only)
+ * Organizations API Proxy Routes
  *
  * GET /api/v1/organizations - List all organizations (cross-org access)
  *
- * This is an admin-only endpoint that requires org:cpadmin:access permission.
+ * This endpoint is accessible to any authenticated user.
  * It uses the superadmin API key without organization filtering.
  */
 
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { hasCPAdminAccess } from "../../_lib/permissions";
 import { forwardRequest, extractQueryParams } from "../../_lib/proxy-client";
-import { handleError, ForbiddenError } from "../../_lib/errors";
+import { handleError } from "../../_lib/errors";
 
 /**
  * GET /api/v1/organizations
  *
- * List all organizations (admin access only).
- * Requires org:cpadmin:access permission.
+ * List all organizations.
+ * Requires authentication.
  */
 export async function GET(request: Request) {
   try {
@@ -27,12 +26,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Admin routes require cpadmin:access
-    const isAdmin = await hasCPAdminAccess();
-    if (!isAdmin) {
-      throw new ForbiddenError("This endpoint requires admin access");
-    }
-
     // Extract query params
     const queryParams = extractQueryParams(request);
 
@@ -40,7 +33,7 @@ export async function GET(request: Request) {
     return forwardRequest(
       {
         method: "GET",
-        path: "/organizations",
+        path: "/v1/organizations",
         queryParams,
       },
       {

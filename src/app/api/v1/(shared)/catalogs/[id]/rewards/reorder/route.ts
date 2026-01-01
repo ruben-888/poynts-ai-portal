@@ -40,7 +40,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     return forwardRequest({
       method: "PUT",
-      path: `/catalogs/${id}/rewards/reorder`,
+      path: `/v1/catalogs/${id}/rewards/reorder`,
       body,
     });
   } catch (error) {

@@ -15,7 +15,7 @@ import type { ResolvedApiKey } from "./types";
  * Resolve which API key to use for backend requests
  *
  * Logic:
- * 1. If user has org:cpadmin:access AND is accessing an admin route → superadmin key without org filter
+ * 1. If isAdminRoute is true → superadmin key without org filter (for development)
  * 2. Otherwise → superadmin key WITH organization_id filter based on user's org
  *
  * @param isAdminRoute - Whether this is an admin-only route (cross-org access)
@@ -29,10 +29,9 @@ export async function resolveApiKey(isAdminRoute: boolean = false): Promise<Reso
     throw new Error("BACKEND_API_KEY environment variable is not set");
   }
 
-  // For admin routes accessed by CP admins, use key without org filter
-  const isCPAdmin = await hasCPAdminAccess();
-
-  if (isCPAdmin && isAdminRoute) {
+  // For admin routes, use key without org filter
+  // TODO: Re-enable CP admin permission check once org migration is complete
+  if (isAdminRoute) {
     return {
       apiKey: superadminKey,
       organizationId: undefined, // Admin key can access all orgs

@@ -38,7 +38,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     return forwardRequest({
       method: "GET",
-      path: `/programs/${id}`,
+      path: `/v1/programs/${id}`,
     });
   } catch (error) {
     return handleError(error);
@@ -71,7 +71,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     return forwardRequest({
       method: "PATCH",
-      path: `/programs/${id}`,
+      path: `/v1/programs/${id}`,
       body,
     });
   } catch (error) {
@@ -102,7 +102,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     return forwardRequest(
       {
         method: "DELETE",
-        path: `/programs/${id}`,
+        path: `/v1/programs/${id}`,
       },
       {},
       204

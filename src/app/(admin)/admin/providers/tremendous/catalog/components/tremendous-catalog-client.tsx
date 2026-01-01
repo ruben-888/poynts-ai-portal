@@ -7,96 +7,23 @@ import { DataTable } from "@/components/data-table/data-table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { createTremendousCatalogColumns } from "./tremendous-catalog-columns";
-import { ViewTremendousCard } from "./view-tremendous-card";
-
-// Types for the Tremendous API response data
-interface TremendousImage {
-  src: string;
-  type: string;
-  content_type: string;
-}
-
-interface TremendousSku {
-  min: number;
-  max: number;
-}
-
-interface TremendousCountry {
-  abbr: string;
-}
-
-interface TremendousDocuments {
-  cardholder_agreement_pdf?: string;
-  cardholder_agreement_url?: string;
-  privacy_policy_url?: string;
-}
-
-interface TremendousProduct {
-  id: string;
-  name: string;
-  currency_codes: string[];
-  category: string;
-  images: TremendousImage[];
-  skus: TremendousSku[];
-  countries: TremendousCountry[];
-  disclosure: string;
-  usage_instructions: string;
-  description: string;
-  documents?: TremendousDocuments;
-}
-
-interface TremendousApiResponse {
-  products: TremendousProduct[];
-}
+import { createCatalogColumns } from "./tremendous-catalog-columns";
+import { ViewCatalogItem } from "./view-tremendous-card";
+import type { CatalogItem, CatalogResponse } from "@/types/reward-catalog";
 
 // Client component for displaying Tremendous gift card catalog
 export default function TremendousCatalogClient() {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<TremendousProduct | null>(null);
+  const [selectedItem, setSelectedItem] = useState<CatalogItem | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  // Fetch existing gift card items to check if they're already in the database
-  const { data: existingItems = [] } = useQuery({
-    queryKey: ["existing-tremendous-items"],
-    queryFn: async () => {
-      try {
-        const response = await axios.get("/api/legacy/giftcard-items");
-        // Filter for provider 5 (Tremendous) items
-        return response.data.data
-          .filter((item: any) => item.provider?.id === 5)
-          .map((item: any) => item.providerRewardId); // utid field
-      } catch (error) {
-        console.error("Error fetching existing items:", error);
-        return [];
-      }
-    },
-  });
-
-  // Define a function to fetch the catalog data
-  const fetchCatalog = async () => {
-    try {
-      const response = await axios.get("/api/legacy/providers/tremendous/catalog");
-
-      // The API returns data in the TremendousApiResponse format
-      return response.data.products.map((product: TremendousProduct) => ({
-        id: product.id,
-        name: product.name,
-        currency_codes: product.currency_codes,
-        category: product.category,
-        images: product.images,
-        skus: product.skus,
-        countries: product.countries,
-        disclosure: product.disclosure,
-        usage_instructions: product.usage_instructions,
-        description: product.description,
-        documents: product.documents,
-      }));
-    } catch (error) {
-      console.error("Error fetching Tremendous catalog:", error);
-      throw new Error("Failed to fetch Tremendous catalog");
-    }
+  // Fetch catalog data from unified endpoint
+  const fetchCatalog = async (): Promise<CatalogItem[]> => {
+    const response = await axios.get<CatalogResponse>(
+      "/api/v1/reward-sources/source-tremendous/catalog"
+    );
+    return response.data.data;
   };
 
   // Use React Query to manage data fetching
@@ -123,46 +50,51 @@ export default function TremendousCatalogClient() {
     }
   };
 
-  // Handle view card action
-  const handleViewCard = (product: TremendousProduct) => {
-    setSelectedProduct(product);
+  // Handle view item action
+  const handleViewItem = (item: CatalogItem) => {
+    setSelectedItem(item);
     setIsViewDialogOpen(true);
   };
 
-  // Handle add brand item action
-  const handleAddBrandItem = async (product: TremendousProduct) => {
+  // Handle add/sync item action
+  const handleAddBrandItem = async (item: CatalogItem) => {
     try {
-      toast.loading("Adding item to system...", { id: "add-item" });
-      
-      const response = await axios.post('/api/legacy/providers/tremendous/catalog/add-item', {
-        product
-      });
-      
-      if (response.data.success) {
-        toast.success(
-          `Successfully added "${response.data.item_name}" to the system`,
-          { id: "add-item" }
-        );
-        // Invalidate the query to refetch existing items
-        queryClient.invalidateQueries({ queryKey: ["existing-tremendous-items"] });
-      } else {
-        toast.error(
-          response.data.error || "Item already exists in the system",
-          { id: "add-item" }
-        );
-      }
-    } catch (error) {
-      console.error("Error adding item:", error);
-      toast.error(
-        "Failed to add item to system. Please try again.",
-        { id: "add-item" }
+      toast.loading("Syncing item to source items...", { id: "sync-item" });
+
+      const response = await axios.post(
+        "/api/v1/reward-sources/source-tremendous/catalog/sync",
+        { sourceIdentifiers: [item.sourceIdentifier] }
       );
+
+      const { created, updated } = response.data;
+
+      if (created > 0) {
+        toast.success(
+          `Successfully added "${item.productName}" to source items`,
+          { id: "sync-item" }
+        );
+      } else if (updated > 0) {
+        toast.success(
+          `Successfully updated "${item.productName}" in source items`,
+          { id: "sync-item" }
+        );
+      } else {
+        toast.info("Item is already up to date", { id: "sync-item" });
+      }
+
+      // Invalidate the catalog query to refresh the sync status
+      queryClient.invalidateQueries({ queryKey: ["tremendous-catalog"] });
+    } catch (error) {
+      console.error("Error syncing item:", error);
+      toast.error("Failed to sync item. Please try again.", {
+        id: "sync-item",
+      });
     }
   };
 
   // Handle double-click on table row
-  const handleRowDoubleClick = (row: any) => {
-    handleViewCard(row.original);
+  const handleRowDoubleClick = (row: { original: CatalogItem }) => {
+    handleViewItem(row.original);
   };
 
   // Show error if data fetching failed
@@ -183,50 +115,48 @@ export default function TremendousCatalogClient() {
   return (
     <>
       <DataTable
-        columns={createTremendousCatalogColumns(handleViewCard)}
+        columns={createCatalogColumns(handleViewItem)}
         data={data}
         searchColumn={{
-          id: "name",
+          id: "productName",
           placeholder: "Search by product name...",
         }}
         searchableColumns={[
           {
-            id: "name",
+            id: "productName",
             displayName: "Product Name",
           },
           {
-            id: "category",
-            displayName: "Category",
+            id: "brandName",
+            displayName: "Brand",
           },
         ]}
         filters={[
           {
-            id: "category",
-            title: "Category",
+            id: "currency",
+            title: "Currency",
             options: Array.from(
-              new Set(
-                data.map(
-                  (item: { category: string }) => item.category,
-                ),
-              ),
+              new Set(data.map((item) => item.currency))
             ).map((value) => ({
-              value: value as string,
-              label: (value as string).replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+              value: value,
+              label: value,
             })),
           },
           {
-            id: "currency_codes",
-            title: "Currency",
-            options: Array.from(
-              new Set(
-                data.flatMap(
-                  (item: { currency_codes: string[] }) => item.currency_codes,
-                ),
-              ),
-            ).map((value) => ({
-              value: value as string,
-              label: value as string,
-            })),
+            id: "status",
+            title: "Status",
+            options: [
+              { value: "active", label: "Active" },
+              { value: "inactive", label: "Inactive" },
+            ],
+          },
+          {
+            id: "sourceItem",
+            title: "Sync Status",
+            options: [
+              { value: "true", label: "Synced" },
+              { value: "false", label: "Not Synced" },
+            ],
           },
         ]}
         enableRefresh={true}
@@ -234,13 +164,12 @@ export default function TremendousCatalogClient() {
         isRefreshing={isRefreshing || isLoading}
         onRowDoubleClick={handleRowDoubleClick}
       />
-      
-      <ViewTremendousCard
-        product={selectedProduct}
+
+      <ViewCatalogItem
+        item={selectedItem}
         isOpen={isViewDialogOpen}
         onOpenChange={setIsViewDialogOpen}
         onAddBrandItem={handleAddBrandItem}
-        existingItemIds={existingItems}
       />
     </>
   );

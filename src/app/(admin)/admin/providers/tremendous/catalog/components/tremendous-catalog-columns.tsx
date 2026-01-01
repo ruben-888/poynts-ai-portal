@@ -1,5 +1,6 @@
 "use client";
 
+import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,101 +12,93 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatCurrency } from "@/lib/utils";
 import { MoreHorizontal, Eye } from "lucide-react";
+import type { CatalogItem } from "@/types/reward-catalog";
 
-// Define columns for the Tremendous catalog data table
-export const createTremendousCatalogColumns = (
-  onViewCard: (product: any) => void
-) => [
+// Define columns for the unified catalog data table
+export const createCatalogColumns = (
+  onViewItem: (item: CatalogItem) => void
+): ColumnDef<CatalogItem>[] => [
   {
-    accessorKey: "name",
-    header: ({ column }: any) => (
-      <DataTableColumnHeader column={column} title="Product Name" />
-    ),
-    cell: ({ row }: any) => {
-      return (
-        <div>
-          <span className="font-medium">{row.getValue("name")}</span>
-        </div>
+    accessorKey: "imageUrl",
+    header: "",
+    cell: ({ row }) => {
+      const imageUrl = row.getValue("imageUrl") as string;
+      return imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={row.original.productName}
+          className="h-8 w-12 object-contain rounded"
+        />
+      ) : (
+        <div className="h-8 w-12 bg-muted rounded" />
       );
     },
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "brandName",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Brand" />
+    ),
+    cell: ({ row }) => (
+      <span className="font-medium">{row.getValue("brandName")}</span>
+    ),
     enableSorting: true,
     enableHiding: false,
   },
   {
-    accessorKey: "category",
-    header: ({ column }: any) => (
-      <DataTableColumnHeader column={column} title="Category" />
+    accessorKey: "productName",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Product" />
     ),
-    cell: ({ row }: any) => {
-      const category = row.getValue("category");
-      return (
-        <Badge variant="outline" className="capitalize">
-          {category?.replace(/_/g, " ")}
-        </Badge>
-      );
-    },
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">{row.getValue("productName")}</span>
+    ),
     enableSorting: true,
     enableHiding: true,
   },
   {
-    accessorKey: "currency_codes",
-    header: ({ column }: any) => (
+    accessorKey: "currency",
+    header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Currency" />
     ),
-    cell: ({ row }: any) => {
-      const currencies = row.getValue("currency_codes") as string[];
-      return (
-        <div className="flex gap-1">
-          {currencies?.slice(0, 2).map((currency) => (
-            <Badge key={currency} variant="secondary" className="font-mono text-xs">
-              {currency}
-            </Badge>
-          ))}
-          {currencies?.length > 2 && (
-            <Badge variant="secondary" className="text-xs">
-              +{currencies.length - 2}
-            </Badge>
-          )}
-        </div>
-      );
-    },
-    enableSorting: false,
-    enableHiding: true,
-  },
-  {
-    accessorKey: "skus.0.min",
-    header: ({ column }: any) => (
-      <DataTableColumnHeader column={column} title="Min Value" />
+    cell: ({ row }) => (
+      <Badge variant="secondary" className="font-mono text-xs">
+        {row.getValue("currency")}
+      </Badge>
     ),
-    cell: ({ row }: any) => {
-      const minValue = row.original.skus?.[0]?.min;
-      return <span className="font-mono">{formatCurrency(minValue)}</span>;
-    },
     enableSorting: true,
     enableHiding: true,
+    filterFn: (row, id, value) => value.includes(row.getValue(id)),
   },
   {
-    accessorKey: "skus.0.max",
-    header: ({ column }: any) => (
-      <DataTableColumnHeader column={column} title="Max Value" />
+    accessorKey: "faceValue",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Face Value" />
     ),
-    cell: ({ row }: any) => {
-      const maxValue = row.original.skus?.[0]?.max;
-      return <span className="font-mono">{formatCurrency(maxValue)}</span>;
+    cell: ({ row }) => {
+      const value = row.getValue("faceValue") as number;
+      const currency = row.original.currency;
+      return (
+        <span className="font-mono">
+          {formatCurrency(value, currency)}
+        </span>
+      );
     },
     enableSorting: true,
     enableHiding: true,
   },
   {
     accessorKey: "countries",
-    header: ({ column }: any) => (
+    header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Countries" />
     ),
-    cell: ({ row }: any) => {
-      const countries = row.getValue("countries") as { abbr: string }[];
+    cell: ({ row }) => {
+      const countries = row.getValue("countries") as string[];
       const countryCount = countries?.length || 0;
-      const hasUS = countries?.some((c) => c.abbr === "US");
-      
+      const hasUS = countries?.includes("US");
+
       return (
         <div className="flex items-center gap-1">
           {hasUS && (
@@ -128,24 +121,60 @@ export const createTremendousCatalogColumns = (
     enableHiding: true,
   },
   {
-    accessorKey: "id",
-    header: ({ column }: any) => (
-      <DataTableColumnHeader column={column} title="Product ID" />
+    accessorKey: "status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ row }: any) => {
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string;
       return (
-        <span className="font-mono text-xs">
-          {row.getValue("id")}
-        </span>
+        <Badge variant={status === "active" ? "default" : "secondary"}>
+          {status}
+        </Badge>
       );
     },
+    enableSorting: true,
+    enableHiding: true,
+    filterFn: (row, id, value) => value.includes(row.getValue(id)),
+  },
+  {
+    accessorKey: "sourceItem",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Sync Status" />
+    ),
+    cell: ({ row }) => {
+      const sourceItem = row.original.sourceItem;
+      const isSynced = sourceItem !== null && sourceItem !== undefined;
+      return (
+        <Badge variant={isSynced ? "default" : "outline"}>
+          {isSynced ? "Synced" : "Not Synced"}
+        </Badge>
+      );
+    },
+    enableSorting: true,
+    enableHiding: true,
+    filterFn: (row) => {
+      const sourceItem = row.original.sourceItem;
+      return sourceItem !== null && sourceItem !== undefined;
+    },
+  },
+  {
+    accessorKey: "sourceIdentifier",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="ID" />
+    ),
+    cell: ({ row }) => (
+      <span className="font-mono text-xs text-muted-foreground">
+        {row.getValue("sourceIdentifier")}
+      </span>
+    ),
     enableSorting: true,
     enableHiding: true,
   },
   {
     id: "actions",
-    cell: ({ row }: any) => {
-      const product = row.original;
+    cell: ({ row }) => {
+      const item = row.original;
 
       return (
         <DropdownMenu>
@@ -159,9 +188,9 @@ export const createTremendousCatalogColumns = (
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[160px]">
-            <DropdownMenuItem onClick={() => onViewCard(product)}>
+            <DropdownMenuItem onClick={() => onViewItem(item)}>
               <Eye className="mr-2 h-4 w-4" />
-              View Card
+              View Details
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

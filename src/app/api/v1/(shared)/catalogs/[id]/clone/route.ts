@@ -38,7 +38,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     return forwardRequest(
       {
         method: "POST",
-        path: `/catalogs/${id}/clone`,
+        path: `/v1/catalogs/${id}/clone`,
         body: body || undefined,
       },
       {},

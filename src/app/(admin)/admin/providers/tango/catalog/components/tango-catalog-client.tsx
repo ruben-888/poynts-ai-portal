@@ -1,99 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { DataTable } from "@/components/data-table/data-table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { createTangoCatalogColumns } from "./tango-catalog-columns";
-import { ViewTangoCard } from "./view-tango-card";
-
-// Types for the Tango API response data
-interface AssociatedItem {
-  redemption_id: string;
-  cpid: string | null;
-  cpidx: string | null;
-  type: "giftcard";
-  value: string;
-  poynts: string;
-  title: string;
-  name: string | null;
-  inventory_remaining: string;
-  reward_status: "active" | "suspended" | "deleted";
-  reward_availability: string;
-  language: string;
-  utid: string;
-  value_type: string;
-  tags?: string;
-  priority: number;
-  reward_image?: string;
-  source_letter: string;
-  item_id: number;
-  brand_id: number;
-  cards?: Array<{
-    giftcard_id: string;
-    reward_name: string;
-    brand_name: string;
-    cpidx: string;
-    value: number;
-    reward_status: string;
-    rebate_provider_percentage?: number;
-    rebate_base_percentage?: number;
-    rebate_customer_percentage?: number;
-    rebate_cp_percentage?: number;
-  }>;
-}
-
-interface TangoProduct {
-  productId: string;
-  brandName: string;
-  description: string;
-  imageUrl: string;
-  minAmount: {
-    amount: number;
-    currency: string;
-  };
-  maxAmount: {
-    amount: number;
-    currency: string;
-  };
-  terms: string;
-  cardExists?: boolean;
-  associatedItems?: AssociatedItem[];
-}
-
-interface TangoApiResponse {
-  products: TangoProduct[];
-}
+import { toast } from "sonner";
+import { createCatalogColumns } from "./tango-catalog-columns";
+import { ViewCatalogItem } from "./view-tango-card";
+import type { CatalogItem, CatalogResponse } from "@/types/reward-catalog";
 
 // Client component for displaying Tango gift card catalog
 export default function TangoCatalogClient() {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<TangoProduct | null>(null);
+  const [selectedItem, setSelectedItem] = useState<CatalogItem | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
 
-  // Define a function to fetch the catalog data
-  const fetchCatalog = async () => {
-    try {
-      const response = await axios.get("/api/legacy/providers/tango/catalog");
-
-      // The API returns data in the TangoApiResponse format
-      return response.data.products.map((product: TangoProduct) => ({
-        productId: product.productId,
-        brandName: product.brandName,
-        description: product.description,
-        imageUrl: product.imageUrl,
-        minAmount: product.minAmount,
-        maxAmount: product.maxAmount,
-        terms: product.terms,
-        cardExists: product.cardExists,
-        associatedItems: product.associatedItems || [],
-      }));
-    } catch (error) {
-      console.error("Error fetching Tango catalog:", error);
-      throw new Error("Failed to fetch Tango catalog");
-    }
+  // Fetch catalog data from unified endpoint
+  const fetchCatalog = async (): Promise<CatalogItem[]> => {
+    const response = await axios.get<CatalogResponse>(
+      "/api/v1/reward-sources/source-tango/catalog"
+    );
+    return response.data.data;
   };
 
   // Use React Query to manage data fetching
@@ -120,15 +50,51 @@ export default function TangoCatalogClient() {
     }
   };
 
-  // Handle view card action
-  const handleViewCard = (product: TangoProduct) => {
-    setSelectedProduct(product);
+  // Handle view item action
+  const handleViewItem = (item: CatalogItem) => {
+    setSelectedItem(item);
     setIsViewDialogOpen(true);
   };
 
+  // Handle add/sync item action
+  const handleAddBrandItem = async (item: CatalogItem) => {
+    try {
+      toast.loading("Syncing item to source items...", { id: "sync-item" });
+
+      const response = await axios.post(
+        "/api/v1/reward-sources/source-tango/catalog/sync",
+        { sourceIdentifiers: [item.sourceIdentifier] }
+      );
+
+      const { created, updated } = response.data;
+
+      if (created > 0) {
+        toast.success(
+          `Successfully added "${item.productName}" to source items`,
+          { id: "sync-item" }
+        );
+      } else if (updated > 0) {
+        toast.success(
+          `Successfully updated "${item.productName}" in source items`,
+          { id: "sync-item" }
+        );
+      } else {
+        toast.info("Item is already up to date", { id: "sync-item" });
+      }
+
+      // Invalidate the catalog query to refresh the sync status
+      queryClient.invalidateQueries({ queryKey: ["tango-catalog"] });
+    } catch (error) {
+      console.error("Error syncing item:", error);
+      toast.error("Failed to sync item. Please try again.", {
+        id: "sync-item",
+      });
+    }
+  };
+
   // Handle double-click on table row
-  const handleRowDoubleClick = (row: any) => {
-    handleViewCard(row.original);
+  const handleRowDoubleClick = (row: { original: CatalogItem }) => {
+    handleViewItem(row.original);
   };
 
   // Show error if data fetching failed
@@ -149,43 +115,47 @@ export default function TangoCatalogClient() {
   return (
     <>
       <DataTable
-        columns={createTangoCatalogColumns(handleViewCard)}
+        columns={createCatalogColumns(handleViewItem)}
         data={data}
         searchColumn={{
-          id: "brandName",
-          placeholder: "Search by brand name...",
+          id: "productName",
+          placeholder: "Search by product name...",
         }}
         searchableColumns={[
           {
-            id: "brandName",
-            displayName: "Brand Name",
+            id: "productName",
+            displayName: "Product Name",
           },
           {
-            id: "title",
-            displayName: "Title",
+            id: "brandName",
+            displayName: "Brand",
           },
         ]}
         filters={[
           {
-            id: "brandName",
-            title: "Brand",
+            id: "currency",
+            title: "Currency",
             options: Array.from(
-              new Set(
-                data.map(
-                  (item: { brandName: string }) => item.brandName,
-                ),
-              ),
+              new Set(data.map((item) => item.currency))
             ).map((value) => ({
-              value: value as string,
-              label: value as string,
+              value: value,
+              label: value,
             })),
           },
           {
-            id: "cardExists",
-            title: "Card Status",
+            id: "status",
+            title: "Status",
             options: [
-              { value: "true", label: "Enabled" },
-              { value: "false", label: "Disabled" },
+              { value: "active", label: "Active" },
+              { value: "inactive", label: "Inactive" },
+            ],
+          },
+          {
+            id: "sourceItem",
+            title: "Sync Status",
+            options: [
+              { value: "true", label: "Synced" },
+              { value: "false", label: "Not Synced" },
             ],
           },
         ]}
@@ -194,11 +164,12 @@ export default function TangoCatalogClient() {
         isRefreshing={isRefreshing || isLoading}
         onRowDoubleClick={handleRowDoubleClick}
       />
-      
-      <ViewTangoCard
-        product={selectedProduct}
+
+      <ViewCatalogItem
+        item={selectedItem}
         isOpen={isViewDialogOpen}
         onOpenChange={setIsViewDialogOpen}
+        onAddBrandItem={handleAddBrandItem}
       />
     </>
   );

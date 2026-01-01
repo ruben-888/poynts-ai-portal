@@ -37,7 +37,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     return forwardRequest({
       method: "GET",
-      path: `/orders/${id}`,
+      path: `/v1/orders/${id}`,
     });
   } catch (error) {
     return handleError(error);
@@ -70,7 +70,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     return forwardRequest({
       method: "PATCH",
-      path: `/orders/${id}`,
+      path: `/v1/orders/${id}`,
       body,
     });
   } catch (error) {

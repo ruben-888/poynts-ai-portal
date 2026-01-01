@@ -11,7 +11,7 @@ import type { ProxyOptions, ProxyConfig, BackendApiResponse } from "./types";
 
 const BACKEND_BASE_URL =
   process.env.BACKEND_API_URL ||
-  "https://carecloud-api-423331836390.us-west2.run.app/v1";
+  "https://carecloud-api-423331836390.us-west2.run.app";
 
 /**
  * Forward a request to the backend API
