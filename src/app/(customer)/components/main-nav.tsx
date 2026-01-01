@@ -20,6 +20,7 @@ import {
   Megaphone,
   Calendar,
   Layers,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -217,6 +218,17 @@ export function MainNav({
           </DropdownMenuContent>
         </DropdownMenu>
       )}
+      <Link
+        href="/admin/dashboard"
+        onClick={onNavigate}
+        className={cn(
+          baseLinkClasses,
+          pathname.startsWith("/admin") ? "text-primary" : "text-muted-foreground"
+        )}
+      >
+        {showIcons && <Shield className="h-5 w-5" />}
+        Admin
+      </Link>
       {isClientsEnabled && canViewClients && (
         <Link
           href="/clients"
