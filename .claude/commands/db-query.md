@@ -24,7 +24,7 @@ Use the Bash tool to run queries via Node.js with the `pg` module from the backe
 ```bash
 node -e "
 const { Client } = require('/Users/ruben/code/_clients/carepoynt/new-api/carecloud-api/node_modules/pg');
-const c = new Client({ connectionString: 'REDACTED_USE_ENV_VAR' });
+const c = new Client({ connectionString: process.env.POSTGRES_DATABASE_URL });
 c.connect().then(() => c.query('YOUR_SQL_HERE')).then(r => { console.log(JSON.stringify(r.rows, null, 2)); c.end(); }).catch(e => { console.error(e.message); c.end(); });
 "
 ```
