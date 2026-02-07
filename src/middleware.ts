@@ -2,9 +2,9 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
 import { NextResponse } from "next/server";
 
-const isPublicRoute = createRouteMatcher(["/", "/login(.*)", "/verify", "/extension", "/extension/privacy", "/redeem(.*)"]);
+const isPublicRoute = createRouteMatcher(["/", "/login(.*)", "/verify", "/extension", "/extension/privacy", "/redeem(.*)", "/demos(.*)"]);
 
-const isPublicApiRoute = createRouteMatcher(["/api/organizations/sync", "/api/extension/(.*)"]);
+const isPublicApiRoute = createRouteMatcher(["/api/organizations/sync", "/api/extension/(.*)", "/api/v1/reward-sources", "/api/v1/reward-sources/(.*)", "/api/v1/internal/emails/send-gift-card"]);
 
 const isCustomerRoute = createRouteMatcher(["/(customer)/(.*)"]);
 

@@ -58,6 +58,7 @@ interface RewardSourcesResponse {
 export default function SendRewardsClient() {
   const [selectedProvider, setSelectedProvider] = useState<string>("");
   const [selectedReward, setSelectedReward] = useState<NormalizedReward | null>(null);
+  const [selectedFromEmail, setSelectedFromEmail] = useState<string>("rewards@poynts.ai");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("balance");
   const [recipientData, setRecipientData] = useState<RecipientFormData>({
     name: "",
@@ -135,6 +136,12 @@ export default function SendRewardsClient() {
     return numAmount >= minValue && numAmount <= maxValue;
   };
 
+  // From email options
+  const FROM_EMAIL_OPTIONS: Record<string, { label: string; fromName: string }> = {
+    "rewards@poynts.ai": { label: "rewards@poynts.ai", fromName: "PoyntsAI Rewards" },
+    "tim@carepoynt.com": { label: "tim@carepoynt.com", fromName: "PoyntsAI Rewards" },
+  };
+
   // Step completion checks
   const isProviderComplete = !!selectedProvider;
   const isRewardComplete = !!selectedReward;
@@ -145,10 +152,11 @@ export default function SendRewardsClient() {
     recipientData.amount.trim() !== "" &&
     validateAmount(recipientData.amount, selectedReward) &&
     recipientData.subject.trim() !== "";
+  const isFromEmailComplete = !!selectedFromEmail;
   const isPaymentComplete = !!selectedPaymentMethod;
 
   const handleSubmit = async () => {
-    if (!isProviderComplete || !isRewardComplete || !isRecipientComplete || !isPaymentComplete) {
+    if (!isProviderComplete || !isRewardComplete || !isRecipientComplete || !isFromEmailComplete || !isPaymentComplete) {
       return;
     }
 
@@ -167,8 +175,8 @@ export default function SendRewardsClient() {
         currency: selectedReward.currency,
         recipient_email: recipientData.email,
         recipient_name: recipientData.name,
-        from_email: "rewards@poynts.ai",
-        from_name: "PoyntsAI Rewards",
+        from_email: selectedFromEmail,
+        from_name: FROM_EMAIL_OPTIONS[selectedFromEmail]?.fromName || "PoyntsAI Rewards",
         subject: recipientData.subject,
         custom_message: recipientData.message,
         card_image_url: selectedReward.imageUrl?.startsWith("http") ? selectedReward.imageUrl : undefined,
@@ -361,7 +369,48 @@ export default function SendRewardsClient() {
           </div>
         )}
 
-        {/* Step 4: Payment Method */}
+        {/* Step 4: From Email */}
+        <div className="flex items-center justify-between py-4 border-b">
+          <div className="flex items-center gap-3">
+            <div
+              className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold",
+                isFromEmailComplete
+                  ? "bg-green-500 text-white"
+                  : isRecipientComplete
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-300 text-gray-600"
+              )}
+            >
+              {isFromEmailComplete ? <Check className="h-5 w-5" /> : "4"}
+            </div>
+            <div>
+              <div className="font-semibold">From Email</div>
+              <div className="text-sm text-muted-foreground">
+                Choose the sender email address
+              </div>
+            </div>
+          </div>
+          <div className="w-64">
+            <Select
+              value={selectedFromEmail}
+              onValueChange={setSelectedFromEmail}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(FROM_EMAIL_OPTIONS).map(([email, config]) => (
+                  <SelectItem key={email} value={email}>
+                    {config.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Step 5: Payment Method */}
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center gap-3">
             <div
@@ -369,12 +418,12 @@ export default function SendRewardsClient() {
                 "flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold",
                 isPaymentComplete
                   ? "bg-green-500 text-white"
-                  : isRecipientComplete
+                  : isFromEmailComplete
                   ? "bg-blue-500 text-white"
                   : "bg-gray-300 text-gray-600"
               )}
             >
-              {isPaymentComplete ? <Check className="h-5 w-5" /> : "4"}
+              {isPaymentComplete ? <Check className="h-5 w-5" /> : "5"}
             </div>
             <div>
               <div className="font-semibold">Payment method</div>
@@ -419,6 +468,7 @@ export default function SendRewardsClient() {
               !isProviderComplete ||
               !isRewardComplete ||
               !isRecipientComplete ||
+              !isFromEmailComplete ||
               !isPaymentComplete ||
               isSubmitting
             }
