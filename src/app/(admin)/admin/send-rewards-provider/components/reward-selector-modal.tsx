@@ -82,10 +82,24 @@ export function RewardSelectorModal({
 
     // Unified endpoint for Tremendous/Tango/Amazon
     const response = await axios.get<{ data: any[] }>(
-      `/api/v1/reward-sources/${providerId}/catalog`
+      `/api/v1/reward-sources/${providerId}/catalog`,
+      { params: { limit: 500 } }
     );
     console.log(`${providerId} API response:`, response.data);
-    const normalized = response.data.data.map((item: any) =>
+
+    // Filter out non-gift-card items (bank transfers, PayPal, Visa cards)
+    const EXCLUDED_SOURCE_IDENTIFIERS = new Set([
+      "ET0ZVETV5ILN", // Bank Transfer
+      "KV934TZ93NQM", // PayPal USA
+      "Q24BD9EZ332JT", // Virtual Visa
+      "A2J05SWPI2QG", // Physical Visa
+    ]);
+
+    const filtered = response.data.data.filter(
+      (item: any) => !EXCLUDED_SOURCE_IDENTIFIERS.has(item.sourceIdentifier)
+    );
+
+    const normalized = filtered.map((item: any) =>
       normalizeReward(item, providerId)
     );
     console.log(`Normalized ${providerId} rewards:`, normalized);

@@ -159,37 +159,20 @@ export default function SendRewardsClient() {
 
     setIsSubmitting(true);
     try {
-      // Use new endpoint for Amazon, old endpoint for others
-      if (selectedProvider === "source-amazon") {
-        await axios.post("/api/v1/internal/emails/send-gift-card", {
-          source_id: AMAZON_REWARD.sourceId,
-          source_identifier: AMAZON_REWARD.sourceIdentifier,
-          amount: parseFloat(recipientData.amount),
-          currency: AMAZON_REWARD.currency,
-          recipient_email: recipientData.email,
-          recipient_name: recipientData.name,
-          from_email: "ruben@kleos.com",
-          from_name: "PoyntsAI Rewards",
-          subject: recipientData.subject,
-          custom_message: recipientData.message,
-        });
-      } else {
-        // Old endpoint for other providers
-        await axios.post("/api/v1/orders", {
-          provider_id: selectedProvider,
-          reward_source_identifier: selectedReward.sourceIdentifier,
-          payment_method: selectedPaymentMethod,
-          recipient: {
-            name: recipientData.name,
-            email: recipientData.email,
-            amount: parseFloat(recipientData.amount),
-            currency: selectedReward.currency,
-            language: "en",
-            subject: recipientData.subject,
-            message: recipientData.message,
-          },
-        });
-      }
+      // Direct send: create gift card via provider + send email
+      await axios.post("/api/v1/internal/emails/send-gift-card", {
+        source_id: selectedProvider,
+        source_identifier: selectedReward.sourceIdentifier,
+        amount: parseFloat(recipientData.amount),
+        currency: selectedReward.currency,
+        recipient_email: recipientData.email,
+        recipient_name: recipientData.name,
+        from_email: "rewards@poynts.ai",
+        from_name: "PoyntsAI Rewards",
+        subject: recipientData.subject,
+        custom_message: recipientData.message,
+        card_image_url: selectedReward.imageUrl?.startsWith("http") ? selectedReward.imageUrl : undefined,
+      });
 
       // Show success screen
       setShowSuccess(true);

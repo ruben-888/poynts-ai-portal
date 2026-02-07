@@ -90,11 +90,14 @@ export function ProviderSelector({
     )
   );
 
-  // Sort to ensure consistent order
+  // Sort: Amazon, Tremendous, Tango, Blackhawk
   const sortedProviders = mainProviders.sort((a, b) => {
-    const order = ["source-amazon", "source-tango", "source-blackhawk", "source-tremendous"];
+    const order = ["source-amazon", "source-tremendous", "source-tango", "source-blackhawk"];
     return order.indexOf(a.id) - order.indexOf(b.id);
   });
+
+  // Disabled providers (not yet available)
+  const DISABLED_PROVIDERS = new Set(["source-tango", "source-blackhawk"]);
 
   if (isLoading) {
     return (
@@ -121,18 +124,29 @@ export function ProviderSelector({
         const balance = source.balance?.available ?? 0;
         const hasBalanceError = !!source.balanceError;
         const isBlackhawk = source.id === "source-blackhawk";
+        const isDisabled = DISABLED_PROVIDERS.has(source.id);
 
         return (
           <Card
             key={source.id}
             className={cn(
-              "relative overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg",
-              isSelected && "ring-2 ring-blue-500 shadow-lg"
+              "relative overflow-hidden transition-all duration-200",
+              isDisabled
+                ? "opacity-50 cursor-not-allowed grayscale"
+                : "cursor-pointer hover:shadow-lg",
+              isSelected && !isDisabled && "ring-2 ring-blue-500 shadow-lg"
             )}
-            onClick={() => onSelect(source.id)}
+            onClick={() => !isDisabled && onSelect(source.id)}
           >
+            {/* Disabled overlay label */}
+            {isDisabled && (
+              <div className="absolute top-3 right-3 z-10 inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
+                Coming Soon
+              </div>
+            )}
+
             {/* Selected Indicator */}
-            {isSelected && (
+            {isSelected && !isDisabled && (
               <div className="absolute top-3 right-3 h-6 w-6 bg-blue-500 rounded-full flex items-center justify-center">
                 <Check className="h-4 w-4 text-white" />
               </div>
@@ -162,7 +176,7 @@ export function ProviderSelector({
                 <div className="text-xs text-muted-foreground mb-1">
                   Available Balance
                 </div>
-                {isBlackhawk ? (
+                {isDisabled || isBlackhawk ? (
                   <div className="text-2xl font-bold text-muted-foreground">
                     $???
                   </div>
@@ -185,14 +199,16 @@ export function ProviderSelector({
                 <div
                   className={cn(
                     "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
-                    isRegistered
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
+                    isDisabled
+                      ? "bg-gray-100 text-gray-500"
+                      : isRegistered
+                        ? "bg-green-100 text-green-800"
+                        : "bg-gray-100 text-gray-800"
                   )}
                 >
-                  {isRegistered ? "Connected" : "Not Connected"}
+                  {isDisabled ? "Unavailable" : isRegistered ? "Connected" : "Not Connected"}
                 </div>
-                {isBlackhawk ? (
+                {!isDisabled && (isBlackhawk ? (
                   <div className="text-xs text-muted-foreground font-medium">
                     Unknown
                   </div>
@@ -200,7 +216,7 @@ export function ProviderSelector({
                   <div className="text-xs text-amber-600 font-medium">
                     No funds
                   </div>
-                )}
+                ))}
               </div>
             </div>
           </Card>
