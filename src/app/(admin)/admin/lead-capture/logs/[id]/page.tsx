@@ -378,9 +378,16 @@ export default function LogDetailPage() {
 
           {/* Raw JSON Tab */}
           <TabsContent value="raw">
-            <pre className="text-xs font-mono leading-relaxed bg-muted p-6 rounded-lg overflow-auto">
-              {JSON.stringify(log, null, 2)}
-            </pre>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Raw JSON</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-xs font-mono leading-relaxed bg-muted p-4 rounded-md overflow-auto">
+                  {JSON.stringify(log, null, 2)}
+                </pre>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       )}
