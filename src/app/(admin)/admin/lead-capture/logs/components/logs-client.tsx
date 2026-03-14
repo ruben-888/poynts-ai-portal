@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -9,12 +10,10 @@ import { DataTable } from "@/components/data-table/data-table";
 import { fetchLogs } from "../../lib/api";
 import type { LeadCaptureLog } from "../../lib/schemas";
 import { createLogsColumns } from "./logs-columns";
-import { LogDetailDialog } from "./log-detail-dialog";
 
 export default function LogsClient() {
+  const router = useRouter();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedLog, setSelectedLog] = useState<LeadCaptureLog | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["lead-capture-logs"],
@@ -31,8 +30,7 @@ export default function LogsClient() {
   };
 
   const handleViewLog = (log: LeadCaptureLog) => {
-    setSelectedLog(log);
-    setDetailOpen(true);
+    router.push(`/admin/lead-capture/logs/${log.id}`);
   };
 
   const handleRowDoubleClick = (row: { original: LeadCaptureLog }) => {
@@ -97,12 +95,6 @@ export default function LogsClient() {
           initialPageSize={25}
         />
       )}
-
-      <LogDetailDialog
-        log={selectedLog}
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-      />
     </div>
   );
 }

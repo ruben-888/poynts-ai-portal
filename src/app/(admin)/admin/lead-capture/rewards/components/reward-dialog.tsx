@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 
 import { AvailableRewardSchema, type AvailableReward } from "../../lib/schemas";
 
@@ -44,6 +45,7 @@ export function RewardDialog({ open, onOpenChange, reward, onSave }: RewardDialo
       amount: undefined,
       description: "",
       category: "",
+      enabled: true,
     },
   });
 
@@ -57,6 +59,7 @@ export function RewardDialog({ open, onOpenChange, reward, onSave }: RewardDialo
         amount: undefined,
         description: "",
         category: "",
+        enabled: true,
       });
     }
   }, [reward, form, open]);
@@ -146,6 +149,26 @@ export function RewardDialog({ open, onOpenChange, reward, onSave }: RewardDialo
                     <Input placeholder="Optional" {...field} value={field.value ?? ""} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="enabled"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                  <div className="space-y-0.5">
+                    <FormLabel>Enabled</FormLabel>
+                    <p className="text-sm text-muted-foreground">
+                      Disabled rewards are excluded from AI matching
+                    </p>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value !== false}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />

@@ -79,6 +79,21 @@ export const createRewardsColumns = (
     enableSorting: false,
   },
   {
+    accessorKey: "enabled",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ row }) => {
+      const enabled = row.getValue("enabled") as boolean | undefined;
+      return enabled !== false ? (
+        <Badge variant="default">Enabled</Badge>
+      ) : (
+        <Badge variant="secondary">Disabled</Badge>
+      );
+    },
+    enableSorting: true,
+  },
+  {
     id: "actions",
     cell: ({ row }) => {
       const item = row.original;

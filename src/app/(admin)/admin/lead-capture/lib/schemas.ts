@@ -28,6 +28,7 @@ export const AvailableRewardSchema = z.object({
   amount: z.coerce.number().min(0).optional(),
   description: z.string().optional(),
   category: z.string().optional(),
+  enabled: z.boolean().optional(),
 });
 
 export type AvailableReward = z.infer<typeof AvailableRewardSchema>;
