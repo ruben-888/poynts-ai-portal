@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   Archive,
   Send,
+  Zap,
 } from "lucide-react";
 
 import { NavMain } from "./nav-main";
@@ -83,6 +84,30 @@ const data = {
         {
           title: "New Order",
           url: "/admin/send-rewards",
+        },
+      ],
+    },
+    {
+      title: "Lead Capture",
+      url: "/admin/lead-capture/settings",
+      icon: Zap,
+      isActive: true,
+      items: [
+        {
+          title: "Pipeline Settings",
+          url: "/admin/lead-capture/settings",
+        },
+        {
+          title: "Available Rewards",
+          url: "/admin/lead-capture/rewards",
+        },
+        {
+          title: "Prompt Template",
+          url: "/admin/lead-capture/prompt-template",
+        },
+        {
+          title: "Logs",
+          url: "/admin/lead-capture/logs",
         },
       ],
     },
