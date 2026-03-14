@@ -97,7 +97,7 @@ export default function LogDetailPage() {
       {/* Detail content */}
       {log && (
         <Tabs defaultValue="overview">
-          <TabsList className="grid w-full max-w-lg grid-cols-4">
+          <TabsList className="grid w-full max-w-lg grid-cols-4 bg-muted/60 border">
             <TabsTrigger value="overview" className="gap-1.5 text-xs">
               <Activity className="h-3.5 w-3.5" />
               Overview
@@ -383,7 +383,7 @@ export default function LogDetailPage() {
                 <CardTitle className="text-sm">Raw JSON</CardTitle>
               </CardHeader>
               <CardContent>
-                <pre className="text-xs font-mono leading-relaxed bg-muted p-4 rounded-md overflow-auto">
+                <pre className="text-xs font-mono leading-relaxed bg-muted/40 border p-4 rounded-md overflow-auto">
                   {JSON.stringify(log, null, 2)}
                 </pre>
               </CardContent>
