@@ -89,10 +89,14 @@ const data = {
     },
     {
       title: "Lead Capture",
-      url: "/admin/lead-capture/settings",
+      url: "/admin/lead-capture/test",
       icon: Zap,
       isActive: true,
       items: [
+        {
+          title: "Test Submission",
+          url: "/admin/lead-capture/test",
+        },
         {
           title: "Pipeline Settings",
           url: "/admin/lead-capture/settings",
